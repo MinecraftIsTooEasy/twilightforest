@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "twilightforest_testbot",
+  "version": "0.0.0",
+  "name": "Twilight Forest Test Bot (dev only)",
+  "description": "Automated client test bot for the Twilight Forest port. Dev runs only, never packed into the release jar. Active only with -Dtwilightforest.testbot=true (runClient -Ptestbot).",
+  "authors": [
+    "shiotsuki"
+  ],
+  "license": "LGPL-2.1",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "twilightforest.testbot.TestBotInit"
+    ]
+  },
+  "mixins": [
+    "twilightforest_testbot.mixins.json"
+  ],
+  "depends": {
+    "fishmodloader": ">=3.4.2",
+    "twilightforest": "*",
+    "minecraft": "1.6.4-mite",
+    "java": ">=17"
+  }
+}

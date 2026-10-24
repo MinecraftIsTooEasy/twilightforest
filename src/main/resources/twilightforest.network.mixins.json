@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "twilightforest.mixin.network",
+  "minVersion": "0.8.3",
+  "compatibilityLevel": "JAVA_17",
+  "target": "DEFAULT",
+  "mixins": [
+    "Packet51MapChunkBufferMixin",
+    "ServerPlayerGuiMixin"
+  ],
+  "client": [
+    "NetClientHandlerMapMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

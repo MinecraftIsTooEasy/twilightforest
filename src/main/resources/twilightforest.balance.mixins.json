@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "twilightforest.mixin.balance",
+  "minVersion": "0.8.3",
+  "compatibilityLevel": "JAVA_17",
+  "target": "DEFAULT",
+  "mixins": [
+    "AnimalWatcherMixin",
+    "BlazeDropMixin",
+    "DeathExperienceMixin",
+    "EntityLivingAccessor",
+    "ItemToolDamageMixin",
+    "MobFrenzyMixin",
+    "MobSpawnerLogicMixin",
+    "TeleporterStuckMixin",
+    "WorldRulesMixin",
+    "WorldServerProtectionMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

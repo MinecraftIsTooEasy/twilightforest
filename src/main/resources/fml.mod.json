@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "An enchanted forest dimension. Port of The Twilight Forest 2.3.8 (Minecraft 1.7.10) to MITE R196 on FishModLoader.",
+  "authors": [
+    "shiotsuki"
+  ],
+  "contact": {
+    "homepage": "https://github.com/MinecraftIsTooEasy/twilightforest",
+    "sources": "https://github.com/MinecraftIsTooEasy/twilightforest",
+    "issues": "https://github.com/MinecraftIsTooEasy/twilightforest/issues"
+  },
+  "license": "LGPL-2.1",
+  "icon": "assets/twilightforest/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "twilightforest.TwilightForestMod"
+    ],
+    "client": [
+      "twilightforest.client.TFClientInit"
+    ]
+  },
+  "mixins": [
+    "twilightforest.dimension.mixins.json",
+    "twilightforest.event.mixins.json",
+    "twilightforest.entity.mixins.json",
+    "twilightforest.network.mixins.json",
+    "twilightforest.client.mixins.json",
+    "twilightforest.balance.mixins.json"
+  ],
+  "accessWidener": "twilightforest.accesswidener",
+  "depends": {
+    "fishmodloader": ">=3.4.2",
+    "rusted_iron_core": ">=1.5.7",
+    "minecraft": "1.6.4-mite",
+    "java": ">=17"
+  },
+  "contributors": [
+    "Benimatic (Ben Mazur) - original Twilight Forest",
+    "TeamTwilight"
+  ]
+}

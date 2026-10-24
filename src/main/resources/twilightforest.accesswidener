@@ -1,0 +1,20 @@
+accessWidener v2 named
+accessible method net/minecraft/MapGenStructureIO func_143031_a (Ljava/lang/Class;Ljava/lang/String;)V
+accessible method net/minecraft/MapGenStructureIO func_143034_b (Ljava/lang/Class;Ljava/lang/String;)V
+accessible field net/minecraft/RenderBlocks enableAO Z
+accessible field net/minecraft/RenderBlocks renderAllFaces Z
+accessible field net/minecraft/RenderBlocks renderMinX D
+accessible field net/minecraft/RenderBlocks renderMinY D
+accessible field net/minecraft/RenderBlocks renderMinZ D
+accessible field net/minecraft/RenderBlocks renderMaxX D
+accessible field net/minecraft/RenderBlocks renderMaxY D
+accessible field net/minecraft/RenderBlocks renderMaxZ D
+accessible field net/minecraft/RenderBlocks uvRotateBottom I
+accessible field net/minecraft/RenderBlocks uvRotateTop I
+accessible field net/minecraft/RenderBlocks uvRotateNorth I
+accessible field net/minecraft/RenderBlocks uvRotateSouth I
+accessible field net/minecraft/RenderBlocks uvRotateEast I
+accessible field net/minecraft/RenderBlocks uvRotateWest I
+accessible method net/minecraft/BlockFire setBurnRate (III)V
+accessible field net/minecraft/ShapedRecipes recipeWidth I
+accessible field net/minecraft/ShapedRecipes recipeHeight I

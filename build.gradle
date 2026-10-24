@@ -1,0 +1,225 @@
+import twilightforest.gradle.RemapMiteJarTask
+
+plugins {
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.mod_id
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'ModdedMITE' // obfuscated MITE R196 client jar (com.mojang:minecraft:1.6.4-MITE)
+        url = 'https://maven.limingzxc.top/repository/maven-public/'
+    }
+    maven {
+        name = 'Minecraft' // legacy libraries referenced by MITE signatures (paulscode, jopt-simple, lwjgl)
+        url = 'https://libraries.minecraft.net/'
+    }
+}
+
+configurations {
+    miteObf
+    // FishModLoader (shaded jar: Mixin, MixinExtras, Guava, Log4j, ...; no LWJGL). Feeds remapMinecraft, compileOnly and dev runs.
+    fml { transitive = false }
+    // RustedIronCore: compileOnly + dev run classpath (NOT bundled into the mod jar)
+    ric { transitive = false }
+    decompiler
+    // Libraries the 1.6.4 game needs at runtime (same set FishModLoader's own runClient uses)
+    miteRuntime
+    miteNatives
+}
+
+configurations.compileOnly.extendsFrom configurations.fml, configurations.ric
+
+// ---- Dev-only test bot source set (src/devtest) ---------------------------------------------
+// A second, separate dev mod (own fml.mod.json under src/devtest/resources). It is on the runClient classpath only; the release jar
+// (jar task) packs sourceSets.main.output and nothing else, so the bot never ships. Activate with: ./gradlew runClient -Ptestbot
+sourceSets {
+    devtest // default dirs: src/devtest/java, src/devtest/resources
+}
+configurations.devtestCompileOnly.extendsFrom configurations.compileOnly
+def namedMiteJar = layout.buildDirectory.file("mite/minecraft-${project.minecraft_version}-named.jar")
+
+dependencies {
+    miteObf "com.mojang:minecraft:${project.minecraft_version}"
+    decompiler "org.vineflower:vineflower:${project.vineflower_version}"
+
+    compileOnly files(namedMiteJar) { builtBy 'remapMinecraft' }
+    fml "com.github.MinecraftIsTooEasy:FishModLoader:${project.fml_version}"
+    ric "com.github.MinecraftIsTooEasy:RustedIronCore:${project.ric_version}"
+    // FishModLoader with its shaded libraries (Mixin, MixinExtras, Guava, Gson, Log4j, commons-lang3)
+    // FishModLoader 3.4.2 does not bundle LWJGL
+    compileOnly "org.lwjgl.lwjgl:lwjgl:${project.lwjgl_version}"
+    compileOnly "org.lwjgl.lwjgl:lwjgl_util:${project.lwjgl_version}"
+    compileOnly 'com.paulscode:soundsystem:20120107'
+    compileOnly 'net.sf.jopt-simple:jopt-simple:4.5'
+    // FML's config classes expose Gson types (TFConfig.Utf8ConfigRoot); not bundled by FishModLoader 3.4.2
+    compileOnly 'com.google.code.gson:gson:2.11.0'
+
+    devtestCompileOnly sourceSets.main.output
+
+    miteRuntime "org.lwjgl.lwjgl:lwjgl:${project.lwjgl_version}"
+    miteRuntime "org.lwjgl.lwjgl:lwjgl_util:${project.lwjgl_version}"
+    miteRuntime 'net.sf.jopt-simple:jopt-simple:5.0.4'
+    miteRuntime 'net.java.jinput:jinput:2.0.9'
+    miteRuntime 'net.java.jutils:jutils:1.0.0'
+    miteRuntime 'com.paulscode:soundsystem:20120107'
+    miteRuntime 'com.paulscode:codecwav:20101023'
+    miteRuntime 'com.paulscode:libraryjavasound:20101123'
+    miteRuntime 'com.paulscode:librarylwjglopenal:20100824'
+    miteRuntime 'com.paulscode:codecjorbis:20101023'
+    miteRuntime 'argo:argo:2.25_fixed'
+    miteRuntime 'org.bouncycastle:bcprov-jdk15on:1.47'
+    miteRuntime 'commons-io:commons-io:2.4'
+    miteRuntime 'it.unimi.dsi:fastutil:8.5.12'
+    // FishModLoader 3.4.2 does not bundle Gson / commons-lang3 (RustedIronCore's own dev setup adds it the same way)
+    miteRuntime 'com.google.code.gson:gson:2.11.0'
+    miteRuntime 'org.apache.commons:commons-lang3:3.14.0'
+
+    miteNatives 'org.lwjgl.lwjgl:lwjgl-platform:2.9.0:natives-osx'
+    miteNatives 'org.lwjgl.lwjgl:lwjgl-platform:2.9.0:natives-windows'
+    miteNatives 'org.lwjgl.lwjgl:lwjgl-platform:2.9.0:natives-linux'
+}
+
+// ---- Dev runs -------------------------------------------------------------------------------
+// Like FishModLoader's own dev setup, the named game jar goes on the classpath (FML 4.0.0 reads
+// /net/minecraft/Minecraft.class from the system classpath to detect the MITE release; its startup
+// official->named remap is then a no-op). The mod is discovered through fml.mod.json on the classpath.
+def runClasspath = { ->
+    files(namedMiteJar, tasks.named('jar').flatMap { it.archiveFile }) + configurations.fml + configurations.ric + configurations.miteRuntime
+}
+
+// FishModLoader 3.4.2 bundles Mixin 0.8.5 (ASM 9.x), which cannot read the class files of JDK 22+ (java.util.Optional etc.).
+// Dev runs therefore use a Java 17 toolchain regardless of the JDK Gradle itself runs on.
+def runLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+
+def commonRunJvmArgs = [
+        '-Xmx3G',
+        '-Dfabric.development=true',
+        '-Dfile.encoding=UTF-8',
+        '-Dlog4j2.skipJansi=true',
+        '-Dlog4j2.disableJmx=true',
+]
+
+tasks.register('runServer', JavaExec) {
+    group = 'mite'
+    description = 'Runs a headless MITE dedicated server with FishModLoader and this mod (run/server)'
+    dependsOn 'jar', 'remapMinecraft'
+    def dir = file('run/server')
+    doFirst { dir.mkdirs() }
+    workingDir = dir
+    mainClass = 'net.xiaoyu233.fml.relaunch.server.Main'
+    javaLauncher = runLauncher
+    classpath = runClasspath()
+    jvmArgs commonRunJvmArgs + ['-Dlog.file.prefix=server']
+    args 'nogui'
+    standardInput = System.in
+}
+
+tasks.register('extractNatives', Copy) {
+    group = 'mite'
+    from { configurations.miteNatives.collect { zipTree(it) } }
+    into layout.buildDirectory.dir('natives')
+    include '**/*.dll', '**/*.so', '**/*.dylib', '**/*.jnilib'
+    exclude 'META-INF/**'
+}
+
+tasks.register('runClient', JavaExec) {
+    group = 'mite'
+    description = 'Runs the MITE client with FishModLoader and this mod (run/client). On Apple Silicon pass -Pnatives_dir=<arm64 LWJGL2 natives>'
+    dependsOn 'jar', 'remapMinecraft', 'extractNatives', 'devtestClasses'
+    def dir = file('run/client')
+    doFirst { dir.mkdirs(); new File(dir, 'assets').mkdirs() }
+    workingDir = dir
+    mainClass = 'net.xiaoyu233.fml.relaunch.client.Main'
+    javaLauncher = runLauncher
+    // the dev-only test bot mod (inert unless -Ptestbot adds -Dtwilightforest.testbot=true)
+    // Apple Silicon: the arm64 LWJGL 2.9.3 natives need a matching lwjgl jar ahead of 2.9.0 (-Plwjgl_jars=a.jar,b.jar)
+    classpath = (project.hasProperty('lwjgl_jars') ? files(project.lwjgl_jars.toString().split(',')) : files()) + runClasspath() + sourceSets.devtest.output
+    def nativesDir = project.findProperty('natives_dir') ?: layout.buildDirectory.dir('natives').get().asFile.absolutePath
+    jvmArgs commonRunJvmArgs + ["-Djava.library.path=${nativesDir}", '-Dlog.file.prefix=client']
+    args '--version', '1.6.4', '--gameDir', dir.absolutePath, '--assetsDir', (project.findProperty('assets_dir') ?: new File(dir, 'assets').absolutePath).toString(),
+            '--accessToken', '0', '--userProperties', '{}', '--username', project.username, '--session', 'a.a.a.a',
+            '--width', (project.hasProperty('testbot') ? (project.findProperty('testbot_width') ?: '1280') : project.screen_width).toString(),
+            '--height', (project.hasProperty('testbot') ? (project.findProperty('testbot_height') ?: '720') : project.screen_height).toString()
+    if (project.hasProperty('extra_jvm')) { jvmArgs project.extra_jvm.toString().split(',') }
+    if (project.hasProperty('testbot')) {
+        // report + screenshots go to <project parent>/docs/testbot (never inside the repo); -Ptestbot_skip=a,b skips steps/entities
+        // 1280x720 window by default (-Ptestbot_width/-Ptestbot_height), placed fully on screen by the bot; the bot never grabs the mouse
+        jvmArgs '-Dtwilightforest.testbot=true', "-Dtwilightforest.testbot.dir=${rootDir.parentFile}/docs/testbot".toString(),
+                "-Dtwilightforest.testbot.src=${projectDir}/src/main/java".toString()
+        if (project.hasProperty('testbot_skip')) {
+            jvmArgs "-Dtwilightforest.testbot.skip=${project.testbot_skip}".toString()
+        }
+    }
+}
+
+tasks.register('remapMinecraft', RemapMiteJarTask) {
+    group = 'mite'
+    description = 'Remaps the MITE R196 jar to named and applies FishModLoader + mod access wideners'
+    doFirst {
+    }
+    obfJar.set(layout.file(provider { configurations.miteObf.singleFile }))
+    fmlJar.set(layout.file(provider { configurations.fml.singleFile }))
+    accessWideners.from(file("src/main/resources/${project.mod_id}.accesswidener"))
+    namedJar.set(namedMiteJar)
+}
+
+tasks.register('genSources', JavaExec) {
+    group = 'mite'
+    description = 'Decompiles the named MITE jar to build/mite/sources for reference'
+    dependsOn 'remapMinecraft'
+    def outDir = layout.buildDirectory.dir('mite/sources')
+    classpath = configurations.decompiler
+    mainClass = 'org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler'
+    maxHeapSize = '3G'
+    doFirst { outDir.get().asFile.mkdirs() }
+    args '-dgs=1', '-rsy=1', '-rbr=1', '-ind=    ', '-log=WARN'
+    argumentProviders.add({ [namedMiteJar.get().asFile.absolutePath, outDir.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+    // Mixin's annotation processor ships inside the FishModLoader jar; refmaps are not needed
+    // because FishModLoader runs the game in the named namespace.
+    options.compilerArgs << '-proc:none'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'id', project.mod_id
+    inputs.property 'name', project.mod_name
+    filesMatching('fml.mod.json') {
+        expand(version: project.version, id: project.mod_id, name: project.mod_name)
+    }
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_${project.mod_id}" }
+    }
+}
+
+// Writes the compile classpath to build/compile-classpath.txt for tools/javac_check.py
+tasks.register('writeCompileClasspath') {
+    group = 'mite'
+    dependsOn 'remapMinecraft'
+    def out = layout.buildDirectory.file('compile-classpath.txt')
+    outputs.file(out)
+    doLast {
+        out.get().asFile.text = sourceSets.main.compileClasspath.files.collect { it.absolutePath }.join(File.pathSeparator)
+    }
+}

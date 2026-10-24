@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "twilightforest.testbot.mixin",
+  "minVersion": "0.8.3",
+  "compatibilityLevel": "JAVA_17",
+  "target": "DEFAULT",
+  "mixins": [
+    "BotMinecraftMixin",
+    "BotMinecraftServerMixin",
+    "BotMouseHelperMixin",
+    "BotWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
