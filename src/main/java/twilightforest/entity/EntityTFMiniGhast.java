@@ -71,7 +71,7 @@ public class EntityTFMiniGhast extends EntityTFTowerGhast {
 	/**
 	 * Checks to see if this mini ghast should be attacking this player.
 	 *
-	 * Very similar to endermen code, but we also attack at a certain range
+	 * Very similar to endermen code, but we also attack at a certain range (MITE: the whole stare range)
 	 */
 	@Override
 	protected boolean shouldAttackPlayer(EntityPlayer par1EntityPlayer) {
@@ -79,7 +79,9 @@ public class EntityTFMiniGhast extends EntityTFTowerGhast {
 
 		if (playerHeadArmor != null && playerHeadArmor.itemID == Block.pumpkin.blockID) {
 			return false;
-		} else if (par1EntityPlayer.getDistanceToEntity(this) <= 3.5F && par1EntityPlayer.canSeeEntity(this)) {
+		} else if (par1EntityPlayer.getDistanceToEntity(this) <= this.stareRange && par1EntityPlayer.canSeeEntity(this)) {
+			// MITE: any player it can see within its stare range (8) angers it after the one second moan, not only at 3.5
+			// blocks; farther away (up to 16) staring at it still does
 			return true;
 		} else {
 			Vec3 var3 = par1EntityPlayer.getLook(1.0F).normalize();
