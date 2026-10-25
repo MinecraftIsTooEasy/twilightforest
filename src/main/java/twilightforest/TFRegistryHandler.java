@@ -31,6 +31,7 @@ public class TFRegistryHandler {
         // Blocks, their ItemBlocks and the items all have to exist before BlockRegistryEvent, which is too late
         TFBlocks.registerBlocks(e);
         TFItems.registerItems(e);
+        TFRecipes.registerPendingLateRecipes();
         TFBiomeBase.registerBiomes();
     }
 
@@ -42,6 +43,7 @@ public class TFRegistryHandler {
     @Subscribe
     public void onRecipes(RecipeRegistryEvent e) {
         TFRecipes.registerRecipes(e);
+        TFRecipes.registerPendingLateRecipes();
     }
 
     @Subscribe

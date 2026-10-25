@@ -32,6 +32,9 @@ public class TFRecipes {
     private static final int WILDCARD = 32767;
 
     private static boolean lateRecipesRegistered;
+    /** CraftingManager's list when its constructor ran before the TF items existed; see registerLateRecipes(List). */
+    @SuppressWarnings("rawtypes")
+    private static List pendingRecipeList;
 
     public static void registerRecipes(RecipeRegistryEvent e) {
         // smelting for logs (the output item decides the XP: 0 for charcoal)
@@ -206,7 +209,14 @@ public class TFRecipes {
         if (lateRecipesRegistered) {
             return;
         }
+        if (TFItems.scepterTwilight == null) {
+            // CraftingManager was built before ItemRegistryEvent (another mod touched it early, e.g. through StatList):
+            // the recipes would hold null items, so keep the list and add them once the items exist
+            pendingRecipeList = recipes;
+            return;
+        }
         lateRecipesRegistered = true;
+        pendingRecipeList = null;
         recipes.add(new TFMapCloningRecipe(TFItems.magicMap, TFItems.emptyMagicMap));
         recipes.add(new TFMapCloningRecipe(TFItems.mazeMap, TFItems.emptyMazeMap));
         recipes.add(new TFMapCloningRecipe(TFItems.oreMap, TFItems.emptyOreMap));
@@ -231,6 +241,13 @@ public class TFRecipes {
             return 3;
         }
         return -1;
+    }
+
+    /** Adds the late recipes to a CraftingManager that was constructed before the TF items; call after registerItems. */
+    public static synchronized void registerPendingLateRecipes() {
+        if (pendingRecipeList != null) {
+            registerLateRecipes(pendingRecipeList);
+        }
     }
 
     /**
