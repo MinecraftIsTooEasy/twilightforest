@@ -223,3 +223,17 @@ tasks.register('writeCompileClasspath') {
         out.get().asFile.text = sourceSets.main.compileClasspath.files.collect { it.absolutePath }.join(File.pathSeparator)
     }
 }
+
+// Dev release jar, named like the other pack mods: [暮色森林]twilightforest-MITE-dev-build.<yyyyMMddHHmm>-<version>.jar
+// (version without the +tf suffix). Output: build/dev. ./gradlew devBuild
+tasks.register('devBuild', Copy) {
+    group = 'mite'
+    description = 'Copies the mod jar to build/dev under the dev build name'
+    dependsOn 'jar'
+    def stamp = new Date().format('yyyyMMddHHmm')
+    def version = project.mod_version.toString().split('\\+')[0]
+    from tasks.named('jar').flatMap { it.archiveFile }
+    into layout.buildDirectory.dir('dev')
+    rename { "[暮色森林]${project.mod_id}-MITE-dev-build.${stamp}-${version}.jar".toString() }
+    doFirst { delete layout.buildDirectory.dir('dev') }
+}
