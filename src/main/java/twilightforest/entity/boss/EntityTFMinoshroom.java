@@ -172,8 +172,8 @@ public class EntityTFMinoshroom extends EntityTFMinotaur {
 	protected void dropEquipment(boolean par1, int par2)
     {
         super.dropEquipment(par1, par2);
-        // the Minotaur Axe is a unique, first kill only
-        if (this.killResult == null || this.killResult.dropsUniques())
+        // the Minotaur Axe: always on the first kill, 60% on a repeat kill
+        if (this.killResult == null || this.killResult.dropsUniques() || this.rand.nextFloat() < 0.6F)
         {
             this.dropItemStack(new ItemStack(TFItems.minotaurAxe), 0.0F);
         }
