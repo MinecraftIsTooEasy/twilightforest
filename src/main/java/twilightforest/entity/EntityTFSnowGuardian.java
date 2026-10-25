@@ -205,4 +205,13 @@ public class EntityTFSnowGuardian extends EntityMob {
 	public int getMaxSpawnedInChunk() {
 		return 8;
 	}
+
+	/**
+	 * MITE: the Aurora Palace is lit by glowstone and its ice lets the daylight in (1.7.10 used packed ice), so the light
+	 * check would stop every spawn there; this mob only spawns from the palace spawn list.
+	 */
+	@Override
+	protected boolean isValidLightLevel() {
+		return true;
+	}
 }

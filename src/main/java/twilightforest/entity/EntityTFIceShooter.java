@@ -133,4 +133,13 @@ public class EntityTFIceShooter extends EntityMob implements IRangedAttackMob {
 		this.playSound("random.bow", 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
 		this.worldObj.spawnEntityInWorld(entitysnowball);
 	}
+
+	/**
+	 * MITE: the Aurora Palace is lit by glowstone and its ice lets the daylight in (1.7.10 used packed ice), so the light
+	 * check would stop every spawn there; this mob only spawns from the palace spawn list.
+	 */
+	@Override
+	protected boolean isValidLightLevel() {
+		return true;
+	}
 }

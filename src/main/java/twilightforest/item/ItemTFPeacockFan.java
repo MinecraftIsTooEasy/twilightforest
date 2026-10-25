@@ -61,9 +61,10 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
                 }
             }
         } else {
-            // jump if the player is in the air
-            // TODO: only one extra jump per jump
-            if (!player.onGround && !player.isPotionActive(Potion.jump.id)) {
+            // jump if the player is in the air, once per time off the ground. 1.7.10 gated this on the jump boost the server
+            // grants for 45 ticks, which also blocked it while any other jump boost was active or right after an earlier fan jump
+            if (!player.onGround && !airJumpUsed) {
+                airJumpUsed = true;
                 player.motionX *= 3F;
                 player.motionY = 1.5F;
                 player.motionZ *= 3F;
@@ -88,6 +89,16 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
         player.setHeldItemInUse();
 
         return true;
+    }
+
+    /** Client: the local player has used the air jump since last standing on the ground. */
+    private static boolean airJumpUsed;
+
+    @Override
+    public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean isHeld) {
+        if (world.isRemote && entity.onGround) {
+            airJumpUsed = false;
+        }
     }
 
     /**

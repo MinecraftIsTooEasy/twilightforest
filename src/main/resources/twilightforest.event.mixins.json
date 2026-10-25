@@ -6,6 +6,7 @@
   "target": "DEFAULT",
   "mixins": [
     "BlockDropMixin",
+    "BlockIceMeltMixin",
     "EntityNameMixin",
     "EntityItemPickupMixin",
     "EntityLivingBaseMixin",
@@ -22,6 +23,8 @@
     "BlockPlantLegalityMixin",
     "BlockStemLegalityMixin",
     "ContainerMixin",
+    "ContainerEnchantmentMixin",
+    "ItemHardestMetalMixin",
     "CraftingManagerMixin",
     "EntityArrowMixin",
     "EntityTNTPrimedMixin",
