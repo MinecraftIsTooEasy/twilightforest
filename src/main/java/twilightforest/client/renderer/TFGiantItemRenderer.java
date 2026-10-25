@@ -148,7 +148,6 @@ public class TFGiantItemRenderer implements TFItemRenderer {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         inventoryRenderItem.renderIcon(0, 0, icon, 16, 16);
-        GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glEnable(GL11.GL_LIGHTING);
     }
 }

@@ -59,7 +59,12 @@ public abstract class ItemRendererMixin {
             GL11.glRotatef(335.0F, 0.0F, 0.0F, 1.0F);
             GL11.glTranslatef(-0.9375F, -0.0625F, 0.0F);
         }
-        renderer.render(type, stack, this.renderBlocksInstance, entity);
+        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+        try {
+            renderer.render(type, stack, this.renderBlocksInstance, entity);
+        } finally {
+            GL11.glPopAttrib();
+        }
         GL11.glDisable(32826);
         GL11.glPopMatrix();
         ci.cancel();

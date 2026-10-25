@@ -23,7 +23,9 @@ import twilightforest.client.TFItemRenderers;
 
 /**
  * Forge IItemRenderer INVENTORY and ENTITY (dropped items and item frames). The transforms are the ones
- * ForgeHooksClient applied before calling the renderer.
+ * ForgeHooksClient applied before calling the renderer. Every renderer call is wrapped in glPushAttrib/glPopAttrib: the ice
+ * and giant item renderers switched alpha test off on the way out, and every item drawn after them in the same frame showed
+ * its transparent pixels (black or stray colour squares behind the icon).
  */
 @Mixin(RenderItem.class)
 public abstract class RenderItemMixin {
@@ -52,7 +54,12 @@ public abstract class RenderItemMixin {
             }
             GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
             this.itemRenderBlocks.useInventoryTint = this.renderWithColor;
-            renderer.render(TFItemRenderType.INVENTORY, stack, this.itemRenderBlocks);
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+            try {
+                renderer.render(TFItemRenderType.INVENTORY, stack, this.itemRenderBlocks);
+            } finally {
+                GL11.glPopAttrib();
+            }
             this.itemRenderBlocks.useInventoryTint = true;
             GL11.glPopMatrix();
         } else {
@@ -63,7 +70,12 @@ public abstract class RenderItemMixin {
                 GL11.glColor4f((color >> 16 & 255) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F, 1.0F);
             }
             // the enchantment glint is drawn by renderItemAndEffectIntoGUI afterwards, renderers must not draw it
-            renderer.render(TFItemRenderType.INVENTORY, stack, this.itemRenderBlocks);
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+            try {
+                renderer.render(TFItemRenderType.INVENTORY, stack, this.itemRenderBlocks);
+            } finally {
+                GL11.glPopAttrib();
+            }
             GL11.glPopMatrix();
             GL11.glEnable(2896);
         }
@@ -111,12 +123,27 @@ public abstract class RenderItemMixin {
                     GL11.glTranslatef((random.nextFloat() * 2.0F - 1.0F) * 0.2F / scale, (random.nextFloat() * 2.0F - 1.0F) * 0.2F / scale,
                             (random.nextFloat() * 2.0F - 1.0F) * 0.2F / scale);
                 }
+                GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+                try {
+                    GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+            try {
                 renderer.render(TFItemRenderType.ENTITY, stack, this.itemRenderBlocks, entity);
+            } finally {
+                GL11.glPopAttrib();
+            }
+                } finally {
+                    GL11.glPopAttrib();
+                }
                 GL11.glPopMatrix();
             }
         } else {
             GL11.glScalef(0.5F, 0.5F, 0.5F);
-            renderer.render(TFItemRenderType.ENTITY, stack, this.itemRenderBlocks, entity);
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+            try {
+                renderer.render(TFItemRenderType.ENTITY, stack, this.itemRenderBlocks, entity);
+            } finally {
+                GL11.glPopAttrib();
+            }
         }
         GL11.glDisable(32826);
         GL11.glPopMatrix();
