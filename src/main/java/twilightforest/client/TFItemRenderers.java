@@ -32,8 +32,11 @@ public final class TFItemRenderers {
         return renderer != null && renderer.handles(stack, type) ? renderer : null;
     }
 
-    /** True for ItemMap subclasses whose renderer takes over the first-person map view. */
+    /**
+     * True for ItemMap subclasses: like Forge, they get the first-person map view (the maze/ore maps have no
+     * FIRST_PERSON_MAP renderer and are drawn by the vanilla MapItemRenderer).
+     */
     public static boolean handlesFirstPersonMap(ItemStack stack) {
-        return stack != null && stack.getItem() instanceof ItemMap && get(stack, TFItemRenderType.FIRST_PERSON_MAP) != null;
+        return stack != null && stack.getItem() instanceof ItemMap;
     }
 }

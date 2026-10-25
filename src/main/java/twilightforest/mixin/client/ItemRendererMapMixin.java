@@ -19,8 +19,8 @@ import twilightforest.client.TFItemRenderers;
 
 /**
  * Forge IItemRenderer FIRST_PERSON_MAP. MITE's first-person view hard-codes Item.map twice (the itemID test
- * and getMapData) and MapItemRenderer.renderMap; for ItemMap subclasses with a FIRST_PERSON_MAP renderer
- * the held item replaces Item.map and the renderer replaces renderMap.
+ * and getMapData) and MapItemRenderer.renderMap; for every ItemMap subclass the held item replaces Item.map,
+ * and a FIRST_PERSON_MAP renderer (if any) replaces renderMap.
  */
 @Mixin(ItemRenderer.class)
 public abstract class ItemRendererMapMixin {
