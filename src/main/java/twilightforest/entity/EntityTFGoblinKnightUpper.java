@@ -311,7 +311,9 @@ public class EntityTFGoblinKnightUpper extends EntityMob {
 
 		boolean attackSuccess = result != null && result.entityWasNegativelyAffected();
 		if (attackSuccess && this.ridingEntity != null && this.ridingEntity instanceof EntityLiving && attacker != null) {
-			((EntityLiving) this.ridingEntity).knockBack(attacker, damage.getAmount(), 0.1, 0.1);
+			// MITE multiplies the knockback by the float (1.7.10 ignored it), so pass 1, not the damage: a huge hit flung the mount
+			// so far that its move froze the server
+			((EntityLiving) this.ridingEntity).knockBack(attacker, 1.0F, 0.1, 0.1);
 		}
 
 		return result;
@@ -374,7 +376,8 @@ public class EntityTFGoblinKnightUpper extends EntityMob {
 				d0 = (Math.random() - Math.random()) * 0.01D;
 			}
 
-			toKnockback.knockBack(responsible, 0, d0 / 4D, d1 / 4D);
+			// strength 1: MITE multiplies by it (1.7.10 passed an ignored 0, which in MITE stops the knight dead)
+			toKnockback.knockBack(responsible, 1.0F, d0 / 4D, d1 / 4D);
 
 			// also set revenge target
 			if (responsible instanceof EntityLivingBase) {

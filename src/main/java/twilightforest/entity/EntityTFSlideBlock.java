@@ -252,7 +252,8 @@ public class EntityTFSlideBlock extends Entity implements ITFSpawnData {
 				double kx = (this.posX - entity.posX) * 2.0;
 				double kz = (this.posZ - entity.posZ) * 2.0;
 
-				((EntityLivingBase) entity).knockBack(this, 5, kx, kz);
+				// strength 1: MITE multiplies by it, the 1.7.10 5 was ignored
+				((EntityLivingBase) entity).knockBack(this, 1.0F, kx, kz);
 			}
 		}
 	}

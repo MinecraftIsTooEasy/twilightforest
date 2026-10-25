@@ -256,7 +256,8 @@ public class BlockTFSlider extends BlockRotatedPillar {
 			double kx = (x + 0.5 - entity.posX) * 2.0;
 			double kz = (z + 0.5 - entity.posZ) * 2.0;
 
-			((EntityLivingBase) entity).knockBack(null, 5, kx, kz);
+			// strength 1: MITE multiplies by it, the 1.7.10 5 was ignored
+			((EntityLivingBase) entity).knockBack(null, 1.0F, kx, kz);
 		}
 	}
 }
