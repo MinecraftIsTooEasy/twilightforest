@@ -18,3 +18,4 @@ accessible field net/minecraft/RenderBlocks uvRotateWest I
 accessible method net/minecraft/BlockFire setBurnRate (III)V
 accessible field net/minecraft/ShapedRecipes recipeWidth I
 accessible field net/minecraft/ShapedRecipes recipeHeight I
+accessible field net/minecraft/GuiButton width I

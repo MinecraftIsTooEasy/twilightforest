@@ -12,6 +12,7 @@
     "EntityPlayerIconMixin",
     "EntityRendererMixin",
     "FontRendererMixin",
+    "GuiAchievementsMixin",
     "GuiIngameMixin",
     "ItemRendererMapMixin",
     "ItemRendererMixin",

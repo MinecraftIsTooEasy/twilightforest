@@ -571,3 +571,5 @@ tf.tooltip.charges=剩余 %s 次
 
 enchantment.tfFireReact=炽热光环
 enchantment.tfChillAura=寒冰光环
+tf.gui.achievementPage.minecraft=原版
+tf.gui.achievementPage.twilight=暮色森林

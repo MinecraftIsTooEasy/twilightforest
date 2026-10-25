@@ -8,13 +8,16 @@ import twilightforest.block.TFBlocks;
 import twilightforest.item.TFItems;
 
 /**
- * MITE has no achievement pages, so the tree is merged into the one achievement screen, shifted to the right of the
- * vanilla tree. The fields stay null until registerAchievements() runs on AchievementRegistryEvent.
+ * MITE has no achievement pages; GuiAchievementsMixin adds a page button that shows either this tree (PAGE) or every
+ * other achievement. The fields stay null until registerAchievements() runs on AchievementRegistryEvent.
  */
 public class TFAchievementPage {
-    /** Vanilla and MITE occupy columns -5..13, so the Twilight tree starts well to the right of them. */
+    /** Kept right of the vanilla and MITE columns (-5..13), so older builds that merged the trees still lay them out apart. */
     public static final int COLUMN_OFFSET = 24;
     public static final int ROW_OFFSET = 0;
+
+    /** Every Twilight achievement, in registration order. */
+    public static final java.util.List<Achievement> PAGE = new java.util.ArrayList<Achievement>();
 
     public static Achievement twilightPortal;
     public static Achievement twilightArrival;
@@ -65,6 +68,7 @@ public class TFAchievementPage {
         if (special) {
             a.setSpecial();
         }
+        PAGE.add(a);
         return a.registerAchievement();
     }
 

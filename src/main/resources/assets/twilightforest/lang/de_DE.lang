@@ -406,3 +406,5 @@ achievement.twilightProgressThorns=Vorbei an den Dornen
 achievement.twilightProgressThorns.desc=Gehe durch das Dornenland, und öffne die Tür des Schlosses.
 achievement.twilightProgressCastle=So ein Schloss - Wow
 achievement.twilightProgressCastle.desc=Was gibt es noch in dieser Burg?!?
+tf.gui.achievementPage.minecraft=Minecraft
+tf.gui.achievementPage.twilight=Twilight Forest

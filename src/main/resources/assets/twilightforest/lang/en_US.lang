@@ -570,3 +570,5 @@ tf.tooltip.charges=%s charges left
 # enchantments
 enchantment.tfFireReact=Fiery Aura
 enchantment.tfChillAura=Chill Aura
+tf.gui.achievementPage.minecraft=Minecraft
+tf.gui.achievementPage.twilight=Twilight Forest

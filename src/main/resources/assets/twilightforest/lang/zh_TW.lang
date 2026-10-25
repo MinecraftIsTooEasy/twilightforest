@@ -323,3 +323,5 @@ tf.compat.none=[暮色森林] 偵測到 %s，但 compat.profile 設為 none，�
 tf.compat.profile.ite=MITE不可能這麼簡單
 tf.compat.profile.extreme=極難
 tf.compat.profile.none=無
+tf.gui.achievementPage.minecraft=原版
+tf.gui.achievementPage.twilight=暮色森林
