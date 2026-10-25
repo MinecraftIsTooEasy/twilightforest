@@ -17,6 +17,7 @@ import net.minecraft.NoiseGeneratorOctaves;
 import net.minecraft.SpawnListEntry;
 import net.minecraft.SpawnerAnimals;
 import net.minecraft.StructureBoundingBox;
+import net.minecraft.StructureComponent;
 import net.minecraft.World;
 import net.minecraft.WorldGenDungeons;
 import net.minecraft.WorldGenLakes;
@@ -1098,6 +1099,10 @@ public class ChunkProviderTwilightForest implements IChunkProvider {
 	
 	public StructureBoundingBox getSBBAt(int mapX, int mapY, int mapZ) {
 		return this.majorFeatureGenerator.getSBBAt(mapX, mapY, mapZ);
+	}
+
+	public <T extends StructureComponent> T getComponentAt(int mapX, int mapY, int mapZ, Class<T> type) {
+		return this.majorFeatureGenerator.getComponentAt(mapX, mapY, mapZ, type);
 	}
 
 	public boolean isBlockProtected(int x, int y, int z) {

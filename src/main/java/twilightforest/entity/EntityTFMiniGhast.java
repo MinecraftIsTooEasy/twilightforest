@@ -2,6 +2,7 @@ package twilightforest.entity;
 
 import net.minecraft.Block;
 import net.minecraft.DamageSource;
+import net.minecraft.EntityMob;
 import net.minecraft.EntityPlayer;
 import net.minecraft.EnumSkyBlock;
 import net.minecraft.Item;
@@ -97,6 +98,11 @@ public class EntityTFMiniGhast extends EntityTFTowerGhast {
 	protected boolean isValidLightLevel() {
 		if (isMinion) {
 			return true;
+		}
+
+		// MITE: spawner mobs skip the light check (only sunlight that would set them on fire stops them)
+		if (this.came_from_spawner) {
+			return EntityMob.isValidLightLevel(this);
 		}
 
 		int myX = MathHelper.floor_double(this.posX);

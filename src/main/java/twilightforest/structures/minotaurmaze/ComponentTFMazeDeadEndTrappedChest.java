@@ -32,7 +32,8 @@ public class ComponentTFMazeDeadEndTrappedChest extends ComponentTFMazeDeadEndCh
 		
 		// TNT!
 		this.placeBlockAtCurrentPosition(world, Block.tnt, 0, 0, 0, 2, sbb);
-		this.placeBlockAtCurrentPosition(world, null, 0, 0, -1, 2, sbb);
+		// MITE: TNT is a falling block, so the TF air pocket under it (0,-1,2) is left out; otherwise the TNT falls away from the
+		// wall the hook powers and the trap never fires
 		this.placeBlockAtCurrentPosition(world, null, 0, 1, -1, 2, sbb);
 		this.placeBlockAtCurrentPosition(world, Block.tnt, 0, 2, 0, 4, sbb);
 		this.placeBlockAtCurrentPosition(world, Block.tnt, 0, 3, 0, 4, sbb);

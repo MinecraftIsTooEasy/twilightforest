@@ -14,13 +14,14 @@ import twilightforest.TFIds;
 import twilightforest.tileentity.TileEntityTFHydraSpawner;
 import twilightforest.tileentity.TileEntityTFKnightPhantomsSpawner;
 import twilightforest.tileentity.TileEntityTFLichSpawner;
+import twilightforest.tileentity.TileEntityTFMinoshroomSpawner;
 import twilightforest.tileentity.TileEntityTFNagaSpawner;
 import twilightforest.tileentity.TileEntityTFSnowQueenSpawner;
 import twilightforest.tileentity.TileEntityTFTowerBossSpawner;
 
 /**
  * Boss spawner block. The metadata picks the boss (0 naga, 1 lich, 2 hydra, 3 tower boss / ur-ghast, 4 knight phantoms,
- * 5 snow queen). The block destroys itself when it spawns its boss.
+ * 5 snow queen, 6 minoshroom). The block destroys itself when it spawns its boss.
  * <p>
  * MITE's {@code ITileEntityProvider.createNewTileEntity(World)} has no metadata, so a placeholder tile entity is created
  * and swapped for the right class on its first tick through {@link #verifyTileEntity(TileEntity)}.
@@ -33,6 +34,9 @@ public class BlockTFBossSpawner extends BlockContainer {
 	public static final int META_TOWER_BOSS = 3;
 	public static final int META_KNIGHT_PHANTOMS = 4;
 	public static final int META_SNOW_QUEEN = 5;
+	public static final int META_MINOSHROOM = 6;
+	/** Highest valid metadata */
+	public static final int META_MAX = META_MINOSHROOM;
 
 	public BlockTFBossSpawner(int id)
 	{
@@ -46,7 +50,7 @@ public class BlockTFBossSpawner extends BlockContainer {
 	@Override
 	public boolean isValidMetadata(int meta)
 	{
-		return meta >= META_NAGA && meta <= META_SNOW_QUEEN;
+		return meta >= META_NAGA && meta <= META_MAX;
 	}
 
 	/**
@@ -68,6 +72,8 @@ public class BlockTFBossSpawner extends BlockContainer {
 			return new TileEntityTFKnightPhantomsSpawner();
 		case META_SNOW_QUEEN:
 			return new TileEntityTFSnowQueenSpawner();
+		case META_MINOSHROOM:
+			return new TileEntityTFMinoshroomSpawner();
 		default:
 			return null;
 		}

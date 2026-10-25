@@ -29,6 +29,7 @@ import twilightforest.compat.TFRegistry;
 import twilightforest.dimension.TFDimension;
 import twilightforest.dimension.TFPortalSanctuary;
 import twilightforest.network.TFNetwork;
+import twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss;
 import twilightforest.world.ChunkProviderTwilightForest;
 import twilightforest.world.WorldProviderTwilightForest;
 
@@ -159,12 +160,32 @@ public class TFTickHandler {
             }
         }
 
+        if (time % 40 == 0 && world.provider instanceof WorldProviderTwilightForest) {
+            checkForEmptyMinoshroomRoom(player, world);
+        }
+
         if (time % 100 == 0 && TwilightForestMod.isProgressionEnforced(world) && world.provider instanceof WorldProviderTwilightForest) {
             if (!player.capabilities.isCreativeMode && !TFTestMode.isOn(world)) {
                 checkForLockedStructuresSendPacket(player, world);
             } else {
                 sendAllClearPacket(player);
             }
+        }
+    }
+
+    /** A labyrinth boss room generated without its Minoshroom gets the boss spawner back (see ComponentTFMazeRoomBoss). */
+    private static void checkForEmptyMinoshroomRoom(EntityPlayer player, World world) {
+        ChunkProviderTwilightForest chunkProvider = ((WorldProviderTwilightForest) world.provider).getChunkProvider();
+        if (chunkProvider == null) {
+            return;
+        }
+        int px = MathHelper.floor_double(player.posX);
+        int py = MathHelper.floor_double(player.posY);
+        int pz = MathHelper.floor_double(player.posZ);
+        ComponentTFMazeRoomBoss room = chunkProvider.getComponentAt(px, py, pz, ComponentTFMazeRoomBoss.class);
+        if (room != null && room.restoreBossSpawner(world, player)) {
+            TwilightForestMod.LOGGER.info("Labyrinth boss room at {} had no Minoshroom, boss spawner restored for {}", room.getBoundingBox(),
+                    player.getCommandSenderName());
         }
     }
 

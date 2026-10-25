@@ -175,6 +175,9 @@ final class TestBotScript {
         for (String name : STRUCTURES) {
             step("struct_" + name, "08 Structure " + name, s -> stepStructure(s, name));
         }
+        step("09_maze_trap", "09 Labyrinth trapped dead end: tripwire -> hook -> TNT", this::stepMazeTrap);
+        step("11_spawner_light", "11 Spawner mobs in bright light (MITE: spawners ignore light)", this::stepSpawnerLight);
+        step("11_minoshroom", "11 Labyrinth boss room: Minoshroom spawner and restore", this::stepMinoshroom);
         step("99_final", "99 Final log scan", s -> s.info("done", "all steps finished"));
     }
 
@@ -1508,5 +1511,293 @@ final class TestBotScript {
         } else {
             s.warn("hedge close-up", "no free air cell next to the nearest hedge block");
         }
+    }
+
+    // ================================================================== 09 labyrinth trap
+
+    /** Block ids/metas of the trap parts (hooks, strings, TNT) inside the 6x6 cell at ox,y,oz (y = cell floor). */
+    static String trapState(World w, int ox, int y, int oz) {
+        StringBuilder b = new StringBuilder();
+        for (int x = ox; x <= ox + 5; x++) {
+            for (int z = oz; z <= oz + 5; z++) {
+                for (int yy = y - 1; yy <= y + 1; yy++) {
+                    int id = w.getBlockId(x, yy, z);
+                    String n = id == Block.tripWireSource.blockID ? "hook" : id == Block.tripWire.blockID ? "string" : id == Block.tnt.blockID ? "tnt" : null;
+                    if (n != null) {
+                        b.append(n).append('(').append(x - ox).append(',').append(yy - y).append(',').append(z - oz).append(" m").append(w.getBlockMetadata(x, yy, z)).append(") ");
+                    }
+                }
+            }
+        }
+        return b.toString().trim();
+    }
+
+    static int countTnt(World w, int ox, int y, int oz) {
+        int n = 0;
+        for (int x = ox - 1; x <= ox + 6; x++) {
+            for (int z = oz - 1; z <= oz + 6; z++) {
+                for (int yy = y - 2; yy <= y + 2; yy++) {
+                    if (w.getBlockId(x, yy, z) == Block.tnt.blockID) {
+                        n++;
+                    }
+                }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Builds a walled 6x6 maze cell in the air for each rotation, generates ComponentTFMazeDeadEndTrappedChest into it, then stands the
+     * player on a string. Records the trap blocks before / after; if the walk-in did not fire, calls the string's collision handler directly
+     * to tell "no collision" from "the hook -> TNT chain does not work".
+     */
+    void stepMazeTrap(Report.Section s) throws Exception {
+        prepPlayer();
+        for (int rot = 0; rot < 4; rot++) {
+            final int r = rot;
+            final int ox = 40 + rot * 40;
+            final int y = GROUND_Y + 30;
+            final int oz = 40;
+            int[] str = bot.server(() -> {
+                WorldServer w = swOf(sp());
+                for (int x = ox - 2; x <= ox + 7; x++) {
+                    for (int z = oz - 2; z <= oz + 7; z++) {
+                        for (int yy = y - 3; yy <= y + 6; yy++) {
+                            boolean edge = x == ox || x == ox + 5 || z == oz || z == oz + 5;
+                            boolean inCell = x >= ox && x <= ox + 5 && z >= oz && z <= oz + 5;
+                            int id = 0;
+                            if (inCell && (yy == y || yy == y - 1 || (edge && yy >= y + 1 && yy <= y + 4) || yy == y + 5)) {
+                                id = TFBlocks.mazestone.blockID;
+                            }
+                            w.setBlock(x, yy, z, id, 0, 2);
+                        }
+                    }
+                }
+                twilightforest.structures.minotaurmaze.ComponentTFMazeDeadEndTrappedChest c =
+                    new twilightforest.structures.minotaurmaze.ComponentTFMazeDeadEndTrappedChest(0, ox, y, oz, r);
+                c.addComponentParts(w, new java.util.Random(1), new net.minecraft.StructureBoundingBox(ox - 10, y - 10, oz - 10, ox + 20, y + 20, oz + 20));
+                for (int x = ox; x <= ox + 5; x++) {
+                    for (int z = oz; z <= oz + 5; z++) {
+                        if (w.getBlockId(x, y + 1, z) == Block.tripWire.blockID) {
+                            return new int[] {x, y + 1, z};
+                        }
+                    }
+                }
+                return null;
+            });
+            String gen = bot.server(() -> trapState(swOf(sp()), ox, y + 1, oz));
+            s.info("rot " + r + " generated", gen);
+            if (str == null) {
+                s.fail("rot " + r, "no string placed");
+                continue;
+            }
+            int tntBefore = bot.server(() -> countTnt(swOf(sp()), ox, y, oz));
+            place(str[0] + 0.5D, str[1], str[2] + 0.5D, 0.0F, 30.0F);
+            bot.serverTicks(10);
+            String walked = bot.server(() -> trapState(swOf(sp()), ox, y + 1, oz));
+            int tntWalk = bot.server(() -> countTnt(swOf(sp()), ox, y, oz));
+            int primed = bot.server(() -> swOf(sp()).getEntitiesWithinAABB(net.minecraft.EntityTNTPrimed.class,
+                net.minecraft.AxisAlignedBB.getBoundingBox(ox - 4, y - 4, oz - 4, ox + 10, y + 8, oz + 10)).size());
+            double[] pp = bot.server(() -> new double[] {sp().posX, sp().boundingBox.minY, sp().posZ});
+            s.info("rot " + r + " after walking onto string at " + str[0] + "," + str[1] + "," + str[2] + " (player " + fmt(pp) + ")",
+                walked + " | tnt blocks " + tntBefore + " -> " + tntWalk + ", primed " + primed);
+            if (tntWalk < tntBefore || primed > 0) {
+                s.ok("rot " + r + ": walking onto the string ignites the TNT");
+            } else {
+                s.fail("rot " + r + " walk", "TNT not ignited by walking onto the string");
+                bot.server(() -> {
+                    Block.tripWire.onEntityCollidedWithBlock(swOf(sp()), str[0], str[1], str[2], sp());
+                    return null;
+                });
+                bot.serverTicks(10);
+                String direct = bot.server(() -> trapState(swOf(sp()), ox, y + 1, oz));
+                int tntDirect = bot.server(() -> countTnt(swOf(sp()), ox, y, oz));
+                s.info("rot " + r + " after direct onEntityCollidedWithBlock", direct + " | tnt blocks " + tntDirect);
+                s.check(tntDirect < tntBefore, "rot " + r + ": direct collision call ignites the TNT (so the walk-in collision is the problem)",
+                    "rot " + r + ": even the direct collision call does not ignite the TNT (hook/TNT chain broken)");
+            }
+            // let the fuse burn out before the next cell
+            place(0.5D, FEET_Y, 0.5D, 0.0F, 20.0F);
+            bot.serverTicks(100);
+        }
+    }
+
+    // ================================================================== 11 minoshroom
+
+    /** The labyrinth boss room nearest to x,z in the TF dimension (searches the loaded structure starts), or null. */
+    static twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss findBossRoom(WorldServer w, int x, int z) throws Exception {
+        Object gen = field(((twilightforest.world.WorldProviderTwilightForest) w.provider).getChunkProvider(),
+            twilightforest.world.ChunkProviderTwilightForest.class, "majorFeatureGenerator");
+        Map<?, ?> starts = (Map<?, ?>) field(gen, net.minecraft.MapGenStructure.class, "structureMap");
+        twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss best = null;
+        double bestD = Double.MAX_VALUE;
+        for (Object o : starts.values()) {
+            for (Object c : ((net.minecraft.StructureStart) o).getComponents()) {
+                if (c instanceof twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss room) {
+                    double dx = room.getBoundingBox().getCenterX() - x;
+                    double dz = room.getBoundingBox().getCenterZ() - z;
+                    if (dx * dx + dz * dz < bestD) {
+                        bestD = dx * dx + dz * dz;
+                        best = room;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+    static int countMinoshrooms(WorldServer w, net.minecraft.StructureBoundingBox bb) {
+        return w.getEntitiesWithinAABB(twilightforest.entity.boss.EntityTFMinoshroom.class, net.minecraft.AxisAlignedBB.getBoundingBox(
+            bb.minX - 8, bb.minY - 4, bb.minZ - 8, bb.maxX + 9, bb.maxY + 5, bb.maxZ + 9)).size();
+    }
+
+    /**
+     * /tf tp labyrinth, then into the boss room: the room's boss spawner (center, y+1) must turn into one Minoshroom. Then the
+     * Minoshroom is removed (an old room without boss): standing in the room must put the spawner back and spawn a new one.
+     */
+    void stepMinoshroom(Report.Section s) throws Exception {
+        String tp = bot.server(() -> "executeCommand -> " + srv().getCommandManager().executeCommand(sp(), "tf tp labyrinth", true));
+        bot.serverTicks(2);
+        prepPlayer();
+        s.info("teleport", tp);
+        int[] room = bot.server(() -> {
+            WorldServer w = swOf(sp());
+            if (w.provider.dimensionId != TFDimension.id) {
+                return null;
+            }
+            twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss r = findBossRoom(w, (int) sp().posX, (int) sp().posZ);
+            if (r == null) {
+                return null;
+            }
+            net.minecraft.StructureBoundingBox bb = r.getBoundingBox();
+            return new int[] {bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ};
+        });
+        if (room == null) {
+            s.fail("boss room", "no ComponentTFMazeRoomBoss in the structure starts near the labyrinth");
+            return;
+        }
+        // room center x/z (the spawner sits at local 7,1,7 of a 16x16 room); stand 4 blocks off center
+        final int cx = (room[0] + room[3]) / 2;
+        final int cz = (room[2] + room[5]) / 2;
+        final int fy = room[1] + 1;
+        s.info("boss room", "bounding box " + java.util.Arrays.toString(room));
+        place(cx + 4.5D, fy, cz + 0.5D, 90.0F, 10.0F);
+        bot.serverTicks(60);
+        int[] first = bot.server(() -> {
+            WorldServer w = swOf(sp());
+            net.minecraft.StructureBoundingBox bb = new net.minecraft.StructureBoundingBox(room[0], room[1], room[2], room[3], room[4], room[5]);
+            int spawners = 0;
+            for (int x = room[0]; x <= room[3]; x++) {
+                for (int z = room[2]; z <= room[5]; z++) {
+                    if (w.getBlockId(x, fy, z) == TFBlocks.bossSpawner.blockID) {
+                        spawners++;
+                    }
+                }
+            }
+            return new int[] {countMinoshrooms(w, bb), spawners};
+        });
+        s.check(first[0] == 1, "boss room has exactly one Minoshroom with the player inside (" + first[0] + ", spawners left " + first[1] + ")",
+            first[0] + " Minoshrooms in the room, " + first[1] + " spawner blocks left");
+        bot.screenshot(s, "minoshroom_room.png");
+        // simulate an old room whose boss went missing: remove the boss and any spawner, the restore check runs every 40 ticks
+        bot.server(() -> {
+            WorldServer w = swOf(sp());
+            for (Object o : w.loadedEntityList) {
+                if (o instanceof twilightforest.entity.boss.EntityTFMinoshroom m) {
+                    m.setDead();
+                }
+            }
+            for (int x = room[0]; x <= room[3]; x++) {
+                for (int z = room[2]; z <= room[5]; z++) {
+                    if (w.getBlockId(x, fy, z) == TFBlocks.bossSpawner.blockID) {
+                        w.setBlockToAir(x, fy, z);
+                    }
+                }
+            }
+        });
+        // the restore only happens for players without the MINO flag; creative players count as having every flag
+        bot.server(() -> sp().setGameType(EnumGameType.SURVIVAL));
+        prepPlayer();
+        bot.serverTicks(5);
+        s.info("player", bot.server(() -> "creative=" + sp().capabilities.isCreativeMode + ", has MINO="
+            + twilightforest.TFProgress.has(sp(), twilightforest.TFProgress.Flag.MINO) + ", room at feet="
+            + ((twilightforest.world.WorldProviderTwilightForest) swOf(sp()).provider).getChunkProvider().getComponentAt((int) Math.floor(sp().posX),
+                (int) Math.floor(sp().posY), (int) Math.floor(sp().posZ), twilightforest.structures.minotaurmaze.ComponentTFMazeRoomBoss.class)
+            + ", feet " + fmt(new double[] {sp().posX, sp().posY, sp().posZ})));
+        int gone = bot.server(() -> countMinoshrooms(swOf(sp()), new net.minecraft.StructureBoundingBox(room[0], room[1], room[2], room[3], room[4], room[5])));
+        s.check(gone == 0, "Minoshroom removed for the restore test", gone + " Minoshrooms still there");
+        bot.serverTicks(100);
+        int again = bot.server(() -> countMinoshrooms(swOf(sp()), new net.minecraft.StructureBoundingBox(room[0], room[1], room[2], room[3], room[4], room[5])));
+        s.check(again == 1, "empty boss room restored its spawner and spawned one Minoshroom", again + " Minoshrooms after the restore window");
+        bot.server(() -> sp().setGameType(EnumGameType.CREATIVE));
+        prepPlayer();
+        place(0.5D, FEET_Y, 0.5D, 0.0F, 20.0F);
+    }
+
+    // ================================================================== 11 spawner light
+
+    /**
+     * MITE lets spawner mobs ignore light. TF mobs that override isValidLightLevel must keep that: getCanSpawnHere(true) is sampled
+     * 200 times at block light 15 (glowstone ring) with came_from_spawner on and off, then a real skeleton druid spawner is run there.
+     */
+    void stepSpawnerLight(Report.Section s) throws Exception {
+        prepPlayer();
+        final int bx = -40;
+        final int by = GROUND_Y + 1;
+        final int bz = 40;
+        bot.server(() -> {
+            WorldServer w = swOf(sp());
+            for (int x = bx - 4; x <= bx + 4; x++) {
+                for (int z = bz - 4; z <= bz + 4; z++) {
+                    w.setBlock(x, GROUND_Y, z, Block.stone.blockID, 0, 2);
+                    for (int y = by; y <= by + 4; y++) {
+                        boolean ring = Math.abs(x - bx) == 4 || Math.abs(z - bz) == 4;
+                        w.setBlock(x, y, z, ring ? Block.glowStone.blockID : 0, 0, 2);
+                    }
+                    w.setBlock(x, by + 5, z, Block.glowStone.blockID, 0, 2);
+                }
+            }
+            return null;
+        });
+        bot.serverTicks(5);
+        int light = bot.server(() -> swOf(sp()).getBlockLightValue(bx + 1, by, bz + 1));
+        s.info("block light at the test spot", String.valueOf(light));
+        Class<?>[] mobs = {twilightforest.entity.EntityTFSkeletonDruid.class, twilightforest.entity.EntityTFWraith.class, twilightforest.entity.EntityTFMiniGhast.class,
+            twilightforest.entity.EntityTFSwarmSpider.class, twilightforest.entity.EntityTFHedgeSpider.class};
+        for (Class<?> c : mobs) {
+            int[] ok = bot.server(() -> {
+                WorldServer w = swOf(sp());
+                int[] r = new int[2];
+                for (int flag = 0; flag < 2; flag++) {
+                    for (int i = 0; i < 200; i++) {
+                        net.minecraft.EntityLiving e = (net.minecraft.EntityLiving) c.getConstructor(World.class).newInstance(w);
+                        e.setLocationAndAngles(bx + 1.5D, by, bz + 1.5D, 0.0F, 0.0F);
+                        setField(e, net.minecraft.EntityLiving.class, "came_from_spawner", flag == 1);
+                        if (e.getCanSpawnHere(true)) {
+                            r[flag]++;
+                        }
+                    }
+                }
+                return r;
+            });
+            s.info(c.getSimpleName(), "getCanSpawnHere(true) at light " + light + ": natural " + ok[0] + "/200, from spawner " + ok[1] + "/200");
+            s.check(ok[1] > 100, c.getSimpleName() + " from a spawner may spawn in bright light (" + ok[1] + "/200)",
+                c.getSimpleName() + " from a spawner is refused in bright light (" + ok[1] + "/200)");
+        }
+        String druidName = twilightforest.entity.TFCreatures.getSpawnerNameFor(twilightforest.entity.EntityTFSkeletonDruid.class);
+        bot.server(() -> {
+            WorldServer w = swOf(sp());
+            w.setBlock(bx, by, bz, Block.mobSpawner.blockID, 0, 2);
+            net.minecraft.TileEntityMobSpawner te = (net.minecraft.TileEntityMobSpawner) w.getBlockTileEntity(bx, by, bz);
+            te.getSpawnerLogic().setMobID(druidName);
+            te.getSpawnerLogic().spawnDelay = 0;
+            return null;
+        });
+        place(bx + 2.5D, by, bz + 2.5D, 0.0F, 30.0F);
+        bot.serverTicks(60);
+        int druids = bot.server(() -> swOf(sp()).getEntitiesWithinAABB(twilightforest.entity.EntityTFSkeletonDruid.class,
+            net.minecraft.AxisAlignedBB.getBoundingBox(bx - 8, by - 4, bz - 8, bx + 8, by + 8, bz + 8)).size());
+        s.check(druids > 0, "real skeleton druid spawner at light " + light + " spawned " + druids + " druid(s) within 60 ticks",
+            "real skeleton druid spawner at light " + light + " spawned nothing within 60 ticks");
     }
 }

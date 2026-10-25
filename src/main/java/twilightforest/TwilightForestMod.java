@@ -20,6 +20,7 @@ import twilightforest.tileentity.TileEntityTFGhastTrapInactive;
 import twilightforest.tileentity.TileEntityTFHydraSpawner;
 import twilightforest.tileentity.TileEntityTFKnightPhantomsSpawner;
 import twilightforest.tileentity.TileEntityTFLichSpawner;
+import twilightforest.tileentity.TileEntityTFMinoshroomSpawner;
 import twilightforest.tileentity.TileEntityTFMoonworm;
 import twilightforest.tileentity.TileEntityTFNagaSpawner;
 import twilightforest.tileentity.TileEntityTFPoppingJet;
@@ -209,6 +210,7 @@ public class TwilightForestMod implements ModInitializer {
         e.register(TileEntityTFCReactorActive.class, "twilightforest:ActiveCarminiteReactor");
         e.register(TileEntityTFKnightPhantomsSpawner.class, "twilightforest:KnightPhantomSpawner");
         e.register(TileEntityTFSnowQueenSpawner.class, "twilightforest:SnowQueenSpawner");
+        e.register(TileEntityTFMinoshroomSpawner.class, "twilightforest:MinoshroomSpawner");
         e.register(TileEntityTFCinderFurnace.class, "twilightforest:CinderFurnace");
     }
 

@@ -126,6 +126,28 @@ public class MapGenTFMajorFeature extends MapGenStructure {
 	}
 	
 	/**
+	 * The structure component of the given class containing the coordinates, if any
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends StructureComponent> T getComponentAt(int mapX, int mapY, int mapZ, Class<T> type) {
+        for (StructureStart start : (Collection<StructureStart>) this.structureMap.values())
+        {
+            if (start.isSizeableStructure() && start.getBoundingBox().intersectsWith(mapX, mapZ, mapX, mapZ))
+            {
+                for (StructureComponent component : (Collection<StructureComponent>) start.getComponents())
+                {
+                    if (type.isInstance(component) && component.getBoundingBox().isVecInside(mapX, mapY, mapZ))
+                    {
+                    	return type.cast(component);
+                    }
+                }
+            }
+        }
+
+        return null;
+	}
+	
+	/**
 	 * Is the block at the coordinates given a protected one?
 	 */
 	@SuppressWarnings("unchecked")

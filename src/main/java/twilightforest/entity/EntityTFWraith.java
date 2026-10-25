@@ -6,6 +6,7 @@ import net.minecraft.DamageSource;
 import net.minecraft.Entity;
 import net.minecraft.EntityDamageResult;
 import net.minecraft.EntityFlying;
+import net.minecraft.EntityMob;
 import net.minecraft.EntityPlayer;
 import net.minecraft.EnumSkyBlock;
 import net.minecraft.IMob;
@@ -307,6 +308,11 @@ public class EntityTFWraith extends EntityFlying implements IMob {
 	@Override
 	protected boolean isValidLightLevel()
 	{
+		// MITE: spawner mobs skip the light check (only sunlight that would set them on fire stops them)
+		if (this.came_from_spawner) {
+			return EntityMob.isValidLightLevel(this);
+		}
+
 		int i = MathHelper.floor_double(this.posX);
 		int j = MathHelper.floor_double(this.boundingBox.minY);
 		int k = MathHelper.floor_double(this.posZ);

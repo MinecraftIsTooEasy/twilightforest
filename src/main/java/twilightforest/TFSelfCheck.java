@@ -135,7 +135,7 @@ public final class TFSelfCheck {
             ok &= checkLangKey(zh, "zh_CN", full);
         }
 
-        for (int meta = BlockTFBossSpawner.META_NAGA; meta <= BlockTFBossSpawner.META_SNOW_QUEEN; meta++) {
+        for (int meta = BlockTFBossSpawner.META_NAGA; meta <= BlockTFBossSpawner.META_MAX; meta++) {
             TileEntity te = BlockTFBossSpawner.createTileEntityForMeta(meta);
             if (!(te instanceof TileEntityTFBossSpawner spawner) || !spawner.canCreateBoss(world)) {
                 TwilightForestMod.LOGGER.error("Self check: boss spawner metadata {} cannot construct its boss", meta);

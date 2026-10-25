@@ -197,6 +197,11 @@ public class EntityTFSkeletonDruid extends EntityMob implements IRangedAttackMob
 	@Override
     protected boolean isValidLightLevel()
     {
+        // MITE: spawner mobs skip the light check (only sunlight that would set them on fire stops them)
+        if (this.came_from_spawner) {
+            return EntityMob.isValidLightLevel(this);
+        }
+
     	boolean valid = false;
         int dx = MathHelper.floor_double(this.posX);
         int dy = MathHelper.floor_double(this.boundingBox.minY);

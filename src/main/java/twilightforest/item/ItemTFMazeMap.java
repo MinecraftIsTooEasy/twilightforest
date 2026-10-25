@@ -101,105 +101,104 @@ public class ItemTFMazeMap extends ItemMap {
             ++mapInfo.field_82569_d;
 
             for (int xStep = xDraw - drawSize + 1; xStep < xDraw + drawSize; ++xStep) {
-                if ((xStep & 15) == (mapInfo.field_82569_d & 15)) {
-                    int highNumber = 255;
-                    int lowNumber = 0;
+                // MITE port: every column in range is refreshed each tick (TF: one column in 16 per tick)
+                int highNumber = 255;
+                int lowNumber = 0;
 
-                    for (int zStep = zDraw - drawSize - 1; zStep < zDraw + drawSize; ++zStep) {
-                        if (xStep >= 0 && zStep >= -1 && xStep < xSize && zStep < zSize) {
-                            int xOffset = xStep - xDraw;
-                            int zOffset = zStep - zDraw;
-                            boolean var20 = xOffset * xOffset + zOffset * zOffset > (drawSize - 2) * (drawSize - 2);
-                            int xDraw2 = (xCenter + xStep - xSize / 2);
-                            int zDraw2 = (zCenter + zStep - zSize / 2);
-                            Chunk chunk = par1World.getChunkFromBlockCoords(xDraw2, zDraw2);
-                            int x15 = xDraw2 & 15;
-                            int z15 = zDraw2 & 15;
-                            int heightValue = par3MapData.yCenter;
-                            Block block = blockAt(chunk, x15, heightValue, z15);
+                for (int zStep = zDraw - drawSize - 1; zStep < zDraw + drawSize; ++zStep) {
+                    if (xStep >= 0 && zStep >= -1 && xStep < xSize && zStep < zSize) {
+                        int xOffset = xStep - xDraw;
+                        int zOffset = zStep - zDraw;
+                        boolean var20 = xOffset * xOffset + zOffset * zOffset > (drawSize - 2) * (drawSize - 2);
+                        int xDraw2 = (xCenter + xStep - xSize / 2);
+                        int zDraw2 = (zCenter + zStep - zSize / 2);
+                        Chunk chunk = par1World.getChunkFromBlockCoords(xDraw2, zDraw2);
+                        int x15 = xDraw2 & 15;
+                        int z15 = zDraw2 & 15;
+                        int heightValue = par3MapData.yCenter;
+                        Block block = blockAt(chunk, x15, heightValue, z15);
 
-                            byte tint = 1;
-                            int colorIndex = 0;
+                        byte tint = 1;
+                        int colorIndex = 0;
 
-                            // for stone, search up and down for ores
-                            if (block == Block.stone && mapOres) {
-                                for (int i = -YSEARCH; i <= YSEARCH; i++) {
-                                    Block searchBlock = blockAt(chunk, x15, heightValue + i, z15);
-                                    if (searchBlock != Block.stone && !isHiddenOre(searchBlock)) {
-                                        block = searchBlock;
-                                        if (i > 0) {
-                                            tint = 2;
-                                        }
-                                        if (i < 0) {
-                                            tint = 0;
-                                        }
-                                        // stop searching
-                                        break;
+                        // for stone, search up and down for ores
+                        if (block == Block.stone && mapOres) {
+                            for (int i = -YSEARCH; i <= YSEARCH; i++) {
+                                Block searchBlock = blockAt(chunk, x15, heightValue + i, z15);
+                                if (searchBlock != Block.stone && !isHiddenOre(searchBlock)) {
+                                    block = searchBlock;
+                                    if (i > 0) {
+                                        tint = 2;
                                     }
-                                }
-                            }
-
-                            if (mapOres && isHiddenOre(block)) {
-                                block = Block.stone;
-                            }
-
-                            if (block != null) {
-                                MapColor mapColor = block.blockMaterial.map_color;
-                                colorIndex = mapColor.colorIndex;
-                            }
-
-                            if (mapOres && block != null) {
-                                // recolor ores (MITE has no lapis/red/pink MapColor, closest ones are used)
-                                if (block == Block.oreCoal) {
-                                    colorIndex = MapColor.obsidianColor.colorIndex;
-                                } else if (block == Block.oreGold) {
-                                    colorIndex = MapColor.goldColor.colorIndex;
-                                } else if (block == Block.oreIron) {
-                                    colorIndex = MapColor.ironColor.colorIndex;
-                                } else if (block == Block.oreCopper) {
-                                    colorIndex = MapColor.copperColor.colorIndex;
-                                } else if (block == Block.oreSilver) {
-                                    colorIndex = MapColor.silverColor.colorIndex;
-                                } else if (block == Block.oreMithril) {
-                                    colorIndex = MapColor.mithrilColor.colorIndex;
-                                } else if (block == Block.oreAdamantium) {
-                                    colorIndex = MapColor.adamantiumColor.colorIndex;
-                                } else if (block == Block.oreLapis) {
-                                    colorIndex = MapColor.waterColor.colorIndex;
-                                } else if (block == Block.oreRedstone || block == Block.oreRedstoneGlowing) {
-                                    colorIndex = MapColor.redstoneColor.colorIndex;
-                                } else if (block == Block.oreDiamond) {
-                                    colorIndex = MapColor.diamondColor.colorIndex;
-                                } else if (block == Block.oreEmerald) {
-                                    colorIndex = MapColor.emeraldColor.colorIndex;
-                                } else if (isOreBlock(block)) {
-                                    // any other ore, catchall
-                                    colorIndex = MapColor.tntColor.colorIndex;
-                                }
-                            }
-
-                            if (zStep >= 0 && xOffset * xOffset + zOffset * zOffset < drawSize * drawSize && (!var20 || (xStep + zStep & 1) != 0)) {
-                                byte existingColor = par3MapData.colors[xStep + zStep * xSize];
-                                byte tintedColor = (byte) (colorIndex * 4 + tint);
-
-                                if (existingColor != tintedColor) {
-                                    if (highNumber > zStep) {
-                                        highNumber = zStep;
+                                    if (i < 0) {
+                                        tint = 0;
                                     }
-
-                                    if (lowNumber < zStep) {
-                                        lowNumber = zStep;
-                                    }
-
-                                    par3MapData.colors[xStep + zStep * xSize] = tintedColor;
+                                    // stop searching
+                                    break;
                                 }
                             }
                         }
-                    }
 
-                    if (highNumber <= lowNumber) {
-                        par3MapData.setColumnDirty(xStep, highNumber, lowNumber);
+                        if (mapOres && isHiddenOre(block)) {
+                            block = Block.stone;
+                        }
+
+                        if (block != null) {
+                            MapColor mapColor = block.blockMaterial.map_color;
+                            colorIndex = mapColor.colorIndex;
+                        }
+
+                        if (mapOres && block != null) {
+                            // recolor ores (MITE has no lapis/red/pink MapColor, closest ones are used)
+                            if (block == Block.oreCoal) {
+                                colorIndex = MapColor.obsidianColor.colorIndex;
+                            } else if (block == Block.oreGold) {
+                                colorIndex = MapColor.goldColor.colorIndex;
+                            } else if (block == Block.oreIron) {
+                                colorIndex = MapColor.ironColor.colorIndex;
+                            } else if (block == Block.oreCopper) {
+                                colorIndex = MapColor.copperColor.colorIndex;
+                            } else if (block == Block.oreSilver) {
+                                colorIndex = MapColor.silverColor.colorIndex;
+                            } else if (block == Block.oreMithril) {
+                                colorIndex = MapColor.mithrilColor.colorIndex;
+                            } else if (block == Block.oreAdamantium) {
+                                colorIndex = MapColor.adamantiumColor.colorIndex;
+                            } else if (block == Block.oreLapis) {
+                                colorIndex = MapColor.waterColor.colorIndex;
+                            } else if (block == Block.oreRedstone || block == Block.oreRedstoneGlowing) {
+                                colorIndex = MapColor.redstoneColor.colorIndex;
+                            } else if (block == Block.oreDiamond) {
+                                colorIndex = MapColor.diamondColor.colorIndex;
+                            } else if (block == Block.oreEmerald) {
+                                colorIndex = MapColor.emeraldColor.colorIndex;
+                            } else if (isOreBlock(block)) {
+                                // any other ore, catchall
+                                colorIndex = MapColor.tntColor.colorIndex;
+                            }
+                        }
+
+                        if (zStep >= 0 && xOffset * xOffset + zOffset * zOffset < drawSize * drawSize && (!var20 || (xStep + zStep & 1) != 0)) {
+                            byte existingColor = par3MapData.colors[xStep + zStep * xSize];
+                            byte tintedColor = (byte) (colorIndex * 4 + tint);
+
+                            if (existingColor != tintedColor) {
+                                if (highNumber > zStep) {
+                                    highNumber = zStep;
+                                }
+
+                                if (lowNumber < zStep) {
+                                    lowNumber = zStep;
+                                }
+
+                                par3MapData.colors[xStep + zStep * xSize] = tintedColor;
+                            }
+                        }
                     }
+                }
+
+                if (highNumber <= lowNumber) {
+                    par3MapData.setColumnDirty(xStep, highNumber, lowNumber);
                 }
             }
         }
@@ -264,12 +263,40 @@ public class ItemTFMazeMap extends ItemMap {
      */
     @Override
     public Packet createMapDataPacket(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        byte[] mapBytes = this.getMapData(par1ItemStack, par2World).getUpdatePacketData(par1ItemStack, par2World, par3EntityPlayer);
+        TFMazeMapData mapData = this.getMapData(par1ItemStack, par2World);
+        byte[] mapBytes = mapData.getUpdatePacketData(par1ItemStack, par2World, par3EntityPlayer);
 
+        if (mapBytes == null) {
+            mapBytes = nextDirtyColumn(mapData, mapData.func_82568_a(par3EntityPlayer));
+        }
         if (mapBytes == null) {
             return null;
         }
         return new Packet131MapData((short) this.itemID, (short) par1ItemStack.getItemSubtype(), mapBytes);
+    }
+
+    /**
+     * Vanilla MapInfo only looks at one pseudo-random column of 128 per tick, so the few dirty columns around the
+     * player took seconds to reach the client. Sends the first dirty column instead, in the same format.
+     */
+    private static byte[] nextDirtyColumn(TFMazeMapData mapData, MapInfo mapInfo) {
+        for (int x = 0; x < 128; ++x) {
+            int zLow = mapInfo.field_76209_b[x];
+            if (zLow >= 0) {
+                int zHigh = mapInfo.field_76210_c[x];
+                byte[] bytes = new byte[zHigh - zLow + 1 + 3];
+                bytes[0] = 0;
+                bytes[1] = (byte) x;
+                bytes[2] = (byte) zLow;
+                for (int i = 0; i < bytes.length - 3; ++i) {
+                    bytes[i + 3] = mapData.colors[(i + zLow) * 128 + x];
+                }
+                mapInfo.field_76210_c[x] = -1;
+                mapInfo.field_76209_b[x] = -1;
+                return bytes;
+            }
+        }
+        return null;
     }
 
     /** Add the map number to the tooltip */
