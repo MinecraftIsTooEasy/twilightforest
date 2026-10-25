@@ -1,8 +1,11 @@
 package twilightforest.entity.boss;
 
+import net.minecraft.Damage;
+import net.minecraft.DamageSource;
 import net.minecraft.Entity;
 import net.minecraft.EntityFireball;
 import net.minecraft.EntityLargeFireball;
+import net.minecraft.EntityPlayer;
 import net.minecraft.RaycastCollision;
 import net.minecraft.World;
 
@@ -34,6 +37,11 @@ public class EntityTFUrGhastFireball extends EntityLargeFireball {
 
 			if (hit != null)
 			{
+				// knocked back by a player: hits like the vanilla fireball (EntityTFUrGhast takes it as normal damage)
+				if (this.shootingEntity instanceof EntityPlayer)
+				{
+					hit.attackEntityFrom(new Damage(DamageSource.causeFireballDamage(this, this.shootingEntity), 6.0F));
+				}
 				hit.setFire(3);
 			}
 

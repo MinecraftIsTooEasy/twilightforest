@@ -481,6 +481,11 @@ public class EntityTFTowerGhast extends EntityGhast {
 		@Override
 		protected void onImpact(RaycastCollision rc) {
 			if (!this.worldObj.isRemote) {
+				// a fireball a player knocked back hits like the vanilla one (a ghast takes 1000 from it); the ghast's own shot
+				// only explodes
+				if (rc.isEntity() && this.shootingEntity instanceof EntityPlayer) {
+					rc.getEntityHit().attackEntityFrom(new Damage(DamageSource.causeFireballDamage(this, this.shootingEntity), 6.0F));
+				}
 				this.worldObj.newExplosion((Entity) null, this.posX, this.posY, this.posZ, twilightforest.TFConfig.explosionBreakBlocks ? 4.0F * this.sizeVsLiving : 0.0F, this.sizeVsLiving, true, false);
 				this.setDead();
 			}
