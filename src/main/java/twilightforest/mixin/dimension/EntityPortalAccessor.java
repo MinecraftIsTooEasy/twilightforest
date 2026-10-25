@@ -8,4 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface EntityPortalAccessor {
     @Accessor("portal_destination_dimension_id")
     int tf$getPortalDestinationDimensionId();
+
+    @Accessor("inPortal")
+    boolean tf$isInPortal();
 }

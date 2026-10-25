@@ -240,10 +240,13 @@ public class CommandTwilightForest extends CommandBase {
         }
 
         if (player.dimension != TFDimension.id) {
-            // arrive at 0,0 so nether coordinate scaling cannot move us; the transfer goes through TFTeleporter
+            // arrive at 0,0 so nether coordinate scaling cannot move us; a command transfer builds no portal, so stand on 0,0 first
             player.setLocationAndAngles(0.0D, player.posY, 0.0D, player.rotationYaw, player.rotationPitch);
             player.travelToDimension(TFDimension.id);
             tf = server.worldServerForDimension(TFDimension.id);
+            TFStructureLocator.forceLoad(tf, 0, 0, 1);
+            player.fallDistance = 0.0F;
+            server.getConfigurationManager().teleportPlayerInsideDimension(player, 0.5D, tf.getTopSolidOrLiquidBlock(0, 0) + 0.1D, 0.5D, true);
         }
 
         int fromX = MathHelper.floor_double(player.posX);

@@ -1,9 +1,12 @@
 package twilightforest.dimension;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.Entity;
 import net.minecraft.EntityPlayer;
 import net.minecraft.World;
 import net.minecraft.WorldProvider;
+import net.minecraft.server.MinecraftServer;
 import twilightforest.TwilightForestMod;
 
 /** Single source of truth for the Twilight Forest dimension identity and its tunables (server + client, common code). */
@@ -67,11 +70,28 @@ public final class TFDimension {
         if (entity == null || entity.ridingEntity != null || entity.riddenByEntity != null) {
             return;
         }
+        if (!entity.worldObj.isRemote && MinecraftServer.getServer() != null) {
+            PORTAL_TOUCH_TICK.put(entity, MinecraftServer.getServer().getTickCounter());
+        }
         if (is(entity.worldObj)) {
             sendToOverworld(entity);
         } else if (entity instanceof EntityPlayer) {
             sendToTwilightForest(entity);
         }
+    }
+
+    /** Server tick of each entity's last TF portal block contact; weak keys, so entities that are gone drop out. */
+    private static final Map<Entity, Integer> PORTAL_TOUCH_TICK = new WeakHashMap<Entity, Integer>();
+
+    /**
+     * True while the transfer of this entity was started by a TF portal: the entity still has its inPortal flag (cleared right
+     * after Entity.onEntityUpdate's travelToDimension) and touched a TF portal block in the last few ticks. Command and other
+     * mod teleports (/home, /back, /tpa, ...) pass neither test and must not search for or build a portal.
+     */
+    public static boolean isPortalTransfer(Entity entity, boolean inPortal) {
+        Integer tick = PORTAL_TOUCH_TICK.get(entity);
+        MinecraftServer server = MinecraftServer.getServer();
+        return inPortal && tick != null && server != null && server.getTickCounter() - tick <= 5;
     }
 
     public static void sendToTwilightForest(Entity entity) {
