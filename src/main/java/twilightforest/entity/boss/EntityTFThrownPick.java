@@ -3,10 +3,12 @@ package twilightforest.entity.boss;
 import net.minecraft.Entity;
 import net.minecraft.EntityLivingBase;
 import net.minecraft.EntityThrowable;
+import net.minecraft.Item;
 import net.minecraft.RaycastCollision;
 import net.minecraft.World;
 import twilightforest.compat.TFDamage;
 import twilightforest.compat.TFParticles;
+import twilightforest.item.TFItems;
 
 public class EntityTFThrownPick extends EntityThrowable  {
 
@@ -89,4 +91,12 @@ public class EntityTFThrownPick extends EntityThrowable  {
     {
         return 0.015F;
     }
+
+	/**
+	 * MITE requires every thrown entity to name its model item
+	 */
+	@Override
+	public Item getModelItem() {
+		return TFItems.knightlyPick;
+	}
 }

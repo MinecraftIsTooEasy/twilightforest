@@ -5,6 +5,7 @@ import net.minecraft.DamageSource;
 import net.minecraft.EntityDamageResult;
 import net.minecraft.EntityLivingBase;
 import net.minecraft.EntityThrowable;
+import net.minecraft.Item;
 import net.minecraft.RaycastCollision;
 import net.minecraft.World;
 import twilightforest.compat.TFDamage;
@@ -99,5 +100,11 @@ public class EntityTFSlimeProjectile extends EntityThrowable {
 		}
 	}
 
-
+	/**
+	 * MITE requires every thrown entity to name its model item
+	 */
+	@Override
+	public Item getModelItem() {
+		return Item.slimeBall;
+	}
 }

@@ -88,4 +88,11 @@ public class EntityTFTomeBolt extends EntityThrowable {
 
 	}
 
+	/**
+	 * MITE requires every thrown entity to name its model item
+	 */
+	@Override
+	public Item getModelItem() {
+		return Item.paper;
+	}
 }

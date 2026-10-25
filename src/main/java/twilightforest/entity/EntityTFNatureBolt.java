@@ -132,4 +132,11 @@ public class EntityTFNatureBolt extends EntityThrowable {
 		}
 	}
 
+	/**
+	 * MITE requires every thrown entity to name its model item
+	 */
+	@Override
+	public Item getModelItem() {
+		return Item.seeds;
+	}
 }
