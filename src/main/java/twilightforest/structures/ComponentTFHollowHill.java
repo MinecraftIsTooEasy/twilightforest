@@ -186,8 +186,10 @@ public class ComponentTFHollowHill extends StructureTFComponent {
         	if (oreStalactitesPlaced >= totalCap) {
         		return;
         	}
-        	// a level 3 hill spans ~50 chunks; thin the attempts so the caps are not used up by the chunks generated first
-        	if (hillSize >= 3 && stalRNG.nextFloat() >= Math.min(1.0F, totalCap * 2.0F / 512)) {
+        	// the caps count up in chunk generation order, so the chunks a player reaches first (the rim) used them all and the
+        	// middle got nothing; thinning every attempt to about twice the cap spreads the ore over the whole hill
+        	int attempts = hillSize >= 3 ? 512 : (hillSize == 2 ? 256 : 128);
+        	if (stalRNG.nextFloat() >= Math.min(1.0F, totalCap * 2.0F / attempts)) {
         		return;
         	}
         	TFGenCaveStalactite stalag = null;
