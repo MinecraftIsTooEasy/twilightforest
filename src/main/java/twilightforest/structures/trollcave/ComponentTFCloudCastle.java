@@ -3,8 +3,15 @@ package twilightforest.structures.trollcave;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.Block;
+import net.minecraft.Enchantment;
+import net.minecraft.EnchantmentData;
+import net.minecraft.Item;
+import net.minecraft.ItemStack;
 import net.minecraft.NBTTagCompound;
+import net.minecraft.TileEntityChest;
 import net.minecraft.World;
+import twilightforest.item.TFItems;
 import net.minecraft.StructureBoundingBox;
 import net.minecraft.StructureComponent;
 import twilightforest.block.TFBlocks;
@@ -125,7 +132,63 @@ public class ComponentTFCloudCastle extends StructureTFComponent {
 			}
 		}
 		
+		// reward chest on the very top of the roof: a fixed one-off haul that makes the climb worth it (exception to the
+		// no-mithril chest rule of MITE_BALANCE L4: there is exactly one per cloud castle and the giants guard it)
+		int cx = this.getXWithOffset(7, 7);
+		int cy = this.getYWithOffset(16);
+		int cz = this.getZWithOffset(7, 7);
+		if (sbb.isVecInside(cx, cy, cz) && world.getBlockId(cx, cy, cz) != Block.chest.blockID) {
+			world.setBlock(cx, cy, cz, Block.chest.blockID, 2, 2);
+			TileEntityChest chest = (TileEntityChest) world.getBlockTileEntity(cx, cy, cz);
+			if (chest != null) {
+				fillRewardChest(chest);
+			}
+		}
+
 		return true;
 	}
 
+	private static void fillRewardChest(TileEntityChest chest) {
+		// metals: one block of each early metal, then a taste of the next tiers (not enough mithril for a full tool)
+		chest.setInventorySlotContents(0, new ItemStack(Block.blockCopper));
+		chest.setInventorySlotContents(1, new ItemStack(Block.blockSilver));
+		chest.setInventorySlotContents(2, new ItemStack(Block.blockGold));
+		chest.setInventorySlotContents(3, new ItemStack(Block.blockIron));
+		chest.setInventorySlotContents(4, new ItemStack(Item.ingotAncientMetal, 4));
+		chest.setInventorySlotContents(5, new ItemStack(Item.ingotMithril, 2));
+		chest.setInventorySlotContents(6, new ItemStack(Item.diamond, 2));
+		chest.setInventorySlotContents(7, new ItemStack(Item.emerald, 4));
+		Item tungsten = findModItem("item.ingots/tungsten");
+		if (tungsten != null) {
+			// ITF-Reborn present: its mithril-tier metal
+			chest.setInventorySlotContents(8, new ItemStack(tungsten, 2));
+		}
+		Item vibranium = findModItem("item.vibranium");
+		if (vibranium != null) {
+			// MITE-ITE present: one vibranium ingot (beyond adamantium), the bait players asked for; one alone makes no tool
+			chest.setInventorySlotContents(16, new ItemStack(vibranium, 1));
+		}
+		// consumables and books
+		chest.setInventorySlotContents(9, new ItemStack(Item.appleGold, 2, 0));
+		chest.setInventorySlotContents(10, new ItemStack(Item.enderPearl, 4));
+		chest.setInventorySlotContents(11, new ItemStack(Item.expBottle, 16));
+		chest.setInventorySlotContents(12, Item.enchantedBook.getEnchantedItemStack(new EnchantmentData(Enchantment.efficiency, 3)));
+		chest.setInventorySlotContents(13, Item.enchantedBook.getEnchantedItemStack(new EnchantmentData(Enchantment.unbreaking, 3)));
+		chest.setInventorySlotContents(14, Item.enchantedBook.getEnchantedItemStack(new EnchantmentData(Enchantment.protection, 3)));
+		// Twilight specials
+		chest.setInventorySlotContents(18, new ItemStack(TFItems.giantPick));
+		chest.setInventorySlotContents(19, new ItemStack(TFItems.charmOfKeeping1));
+		chest.setInventorySlotContents(20, new ItemStack(TFItems.charmOfLife1));
+		chest.setInventorySlotContents(21, new ItemStack(TFItems.magicBeans));
+	}
+
+	/** Another mod's item by unlocalized name (no compile dependency), or null when that mod is not loaded. */
+	private static Item findModItem(String unlocalizedName) {
+		for (Item item : Item.itemsList) {
+			if (item != null && unlocalizedName.equals(item.getUnlocalizedName())) {
+				return item;
+			}
+		}
+		return null;
+	}
 }

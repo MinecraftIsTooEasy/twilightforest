@@ -82,7 +82,9 @@ public class ComponentTFIceTowerBossWing extends ComponentTFIceTowerWing {
 		for (int x = 1; x < size - 1; x++) {
 			for (int z = 1; z < size - 1; z++) {
 				
-				Block ice = rand.nextInt(10) == 0 ? Block.glowStone : Block.ice;
+				// 1.7.10 mixed glowstone into this layer; it melts the ice around it and lights the palace, so MITE uses plain ice
+				rand.nextInt(10);
+				Block ice = Block.ice;
 				int thickness = rand.nextInt(2) + rand.nextInt(2);
 				
 				for (int y = 0; y < thickness; y++) {

@@ -773,7 +773,9 @@ public class TFEvents {
         }
         MinecraftServer server = MinecraftServer.getServer();
         String name = player.getCommandSenderName();
+        // the single-player owner only counts as admin with cheats on, like vanilla's own op commands
         return server != null && (server.isSinglePlayer() && name.equalsIgnoreCase(server.getServerOwner())
+                && player.worldObj != null && player.worldObj.getWorldInfo().areCommandsAllowed()
                 || server.getConfigurationManager().isPlayerOpped(name));
     }
 

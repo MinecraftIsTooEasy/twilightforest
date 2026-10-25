@@ -114,6 +114,14 @@ public class EntityTFMinoshroom extends EntityTFMinotaur {
         super.onLivingUpdate();
     }
 
+	/** Drops of this death, collected so they end up in a chest (TFBossLoot); null outside onDeath. */
+	private java.util.List<net.minecraft.ItemStack> lootChest;
+
+	@Override
+	public net.minecraft.EntityItem dropItemStack(net.minecraft.ItemStack stack, float yOffset) {
+		return twilightforest.TFBossLoot.capture(lootChest, stack) ? null : super.dropItemStack(stack, yOffset);
+	}
+
     /** Progress credit first: the drops are decided inside super.onDeath. */
     @Override
     public void onDeath(DamageSource source)
@@ -122,7 +130,10 @@ public class EntityTFMinoshroom extends EntityTFMinotaur {
         {
             this.killResult = TFProgress.onBossKilled(this, TFProgress.Flag.MINO);
         }
+        lootChest = twilightforest.TFBossLoot.begin(this);
         super.onDeath(source);
+        twilightforest.TFBossLoot.finish(this, lootChest);
+        lootChest = null;
         if (!this.worldObj.isRemote && this.killResult != null)
         {
             this.killResult.awardXp(150);
@@ -171,6 +182,8 @@ public class EntityTFMinoshroom extends EntityTFMinotaur {
     @Override
 	protected void dropEquipment(boolean par1, int par2)
     {
+        // the held axe is dropped by the rule below, not a second time by the vanilla equipment drop
+        this.setCurrentItemOrArmor(0, null);
         super.dropEquipment(par1, par2);
         // the Minotaur Axe: always on the first kill, 60% on a repeat kill
         if (this.killResult == null || this.killResult.dropsUniques() || this.rand.nextFloat() < 0.6F)

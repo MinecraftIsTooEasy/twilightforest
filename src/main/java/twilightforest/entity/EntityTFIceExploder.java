@@ -296,4 +296,10 @@ public class EntityTFIceExploder extends EntityMob {
 	protected boolean isValidLightLevel() {
 		return true;
 	}
+
+	/** EntityCreature.getCanSpawnHere needs a path weight >= 0, which MITE's EntityMob makes negative in bright light. */
+	@Override
+	public float getBlockPathWeight(int x, int y, int z) {
+		return Math.max(0.0F, super.getBlockPathWeight(x, y, z));
+	}
 }

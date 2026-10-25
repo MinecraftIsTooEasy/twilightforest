@@ -508,6 +508,14 @@ public class EntityTFYetiAlpha extends EntityMob implements IRangedAttackMob {
 		}
 	}
 
+	/** Drops of this death, collected so they end up in a chest (TFBossLoot); null outside onDeath. */
+	private java.util.List<net.minecraft.ItemStack> lootChest;
+
+	@Override
+	public net.minecraft.EntityItem dropItemStack(net.minecraft.ItemStack stack, float yOffset) {
+		return twilightforest.TFBossLoot.capture(lootChest, stack) ? null : super.dropItemStack(stack, yOffset);
+	}
+
 	/**
 	 * Trigger achievement when killed
 	 */
@@ -517,7 +525,10 @@ public class EntityTFYetiAlpha extends EntityMob implements IRangedAttackMob {
 		if (!this.worldObj.isRemote && this.killResult == null) {
 			this.killResult = TFProgress.onBossKilled(this, TFProgress.Flag.YETI, TFAchievementPage.twilightHunter);
 		}
+		lootChest = twilightforest.TFBossLoot.begin(this);
 		super.onDeath(par1DamageSource);
+		twilightforest.TFBossLoot.finish(this, lootChest);
+		lootChest = null;
 		if (!this.worldObj.isRemote && this.killResult != null) {
 			// MITE_BALANCE 5.2/9.4: 250 xp for everyone credited, x0.25 on repeat kills
 			this.killResult.awardXp(250);

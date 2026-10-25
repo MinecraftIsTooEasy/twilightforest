@@ -13,7 +13,7 @@ import twilightforest.TFConfig;
 import twilightforest.compat.ITFMeleeItem;
 
 /**
- * Minotaur Axe (iron material battle axe, MITE_BALANCE 6). The sprint charge bonus was dead code in 1.7.10 and is
+ * Minotaur Axe (mithril material battle axe, MITE_BALANCE 6). The sprint charge bonus was dead code in 1.7.10 and is
  * disabled by default (config minotaurAxeSprintBonus).
  */
 public class ItemTFMinotaurAxe extends ItemBattleAxe implements ITFMeleeItem {

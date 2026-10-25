@@ -258,7 +258,7 @@ public final class TFConfig {
             .addEntry(ConfigCategory.of("rules")
                     .withComment("Dimension rules / 维度规则")
                     .addEntry(ConfigEntry.of("spawn.hostileFactor", SPAWN_HOSTILE_FACTOR).withComment("Hostile spawn rate in the forest (MITE uses 0.25 for other dimensions). / 森林中敌对生物的生成比例(MITE其他维度为0.25)。"))
-                    .addEntry(ConfigEntry.of("spawn.miteMonsterWeightPct", MITE_MONSTER_WEIGHT_PCT).withComment("MITE's own monsters (ghouls, wights, shadows, jellies, ...) spawn inside hollow hills and in caves below sea level with this percent of their MITE weight and vanilla stats; 0 turns it off. / MITE原版怪物(食尸鬼、尸妖、暗影、果冻怪等)在空心山丘内部和海平面以下的洞穴中按其MITE权重的此百分比生成,保持原版数值;0为关闭。"))
+                    .addEntry(ConfigEntry.of("spawn.miteMonsterWeightPct", MITE_MONSTER_WEIGHT_PCT).withComment("MITE's own monsters (ghouls, wights, shadows, jellies, ...) spawn inside hollow hills and in caves below sea level with this percent of their MITE weight and vanilla stats; 0 turns it off. Other mods' monsters from MITE's list (e.g. ITF elites) are added at full weight whenever this is above 0. / MITE原版怪物(食尸鬼、尸妖、暗影、果冻怪等)在空心山丘内部和海平面以下的洞穴中按其MITE权重的此百分比生成,保持原版数值;0为关闭。其他模组加入MITE怪物列表的怪物(如ITF精英怪)在此值大于0时按其完整权重加入。"))
                     .addEntry(ConfigEntry.of("mirrorBloodMoon", MIRROR_BLOOD_MOON).withComment("The forest has a blood moon whenever the overworld has one. / 主世界出现血月时,森林也出现血月。"))
                     .addEntry(ConfigEntry.of("mirrorBloodMoonBosses", MIRROR_BLOOD_MOON_BOSSES).withComment("Bosses are frenzied during the mirrored blood moon. / 镜像血月期间,首领会进入狂暴状态。"))
                     .addEntry(ConfigEntry.of("mob.digging", MOB_DIGGING).withComment("Allow monsters to dig blocks inside the forest. / 允许怪物在森林中挖掘方块。"))

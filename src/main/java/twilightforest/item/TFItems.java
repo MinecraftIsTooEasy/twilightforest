@@ -221,9 +221,9 @@ public class TFItems {
         steeleafPick = new ItemTFSteeleafPick(id(TFIds.STEELEAF_PICK), TOOL_STEELEAF);
         steeleafAxe = new ItemTFSteeleafAxe(id(TFIds.STEELEAF_AXE), TOOL_STEELEAF);
         steeleafHoe = new ItemTFSteeleafHoe(id(TFIds.STEELEAF_HOE), TOOL_STEELEAF);
-        // Minotaur axe / mazebreaker use plain iron (balance 7.2), not a TF material
-        minotaurAxe = new ItemTFMinotaurAxe(id(TFIds.MINOTAUR_AXE), Material.iron);
-        mazebreakerPick = new ItemTFMazebreakerPick(id(TFIds.MAZEBREAKER_PICK), Material.iron);
+        // Minotaur axe / mazebreaker use plain mithril (player feedback, was iron in balance 7.2), not a TF material
+        minotaurAxe = new ItemTFMinotaurAxe(id(TFIds.MINOTAUR_AXE), Material.mithril);
+        mazebreakerPick = new ItemTFMazebreakerPick(id(TFIds.MAZEBREAKER_PICK), Material.mithril);
         transformPowder = new ItemTFTransformPowder(id(TFIds.TRANSFORM_POWDER)).makeRare();
         meefRaw = new ItemMeat(id(TFIds.MEEF_RAW), 3, 3, false, false, "meefRaw");
         meefSteak = new ItemMeat(id(TFIds.MEEF_STEAK), 6, 6, false, true, "meefSteak");

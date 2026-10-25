@@ -350,6 +350,14 @@ public class EntityTFSnowQueen extends EntityMob implements IBossDisplayData, IE
 		}
 	}
 
+	/** Drops of this death, collected so they end up in a chest (TFBossLoot); null outside onDeath. */
+	private java.util.List<net.minecraft.ItemStack> lootChest;
+
+	@Override
+	public net.minecraft.EntityItem dropItemStack(net.minecraft.ItemStack stack, float yOffset) {
+		return twilightforest.TFBossLoot.capture(lootChest, stack) ? null : super.dropItemStack(stack, yOffset);
+	}
+
 	/**
 	 * Trigger achievement when killed
 	 */
@@ -359,7 +367,10 @@ public class EntityTFSnowQueen extends EntityMob implements IBossDisplayData, IE
 		if (!worldObj.isRemote && killResult == null) {
 			killResult = TFProgress.onBossKilled(this, TFProgress.Flag.QUEEN, TFAchievementPage.twilightHunter);
 		}
+		lootChest = twilightforest.TFBossLoot.begin(this);
 		super.onDeath(par1DamageSource);
+		twilightforest.TFBossLoot.finish(this, lootChest);
+		lootChest = null;
 		if (!worldObj.isRemote && killResult != null) {
 			killResult.awardXp(400);
 		}

@@ -199,6 +199,12 @@ public class EntityTFTowerGhast extends EntityGhast {
 		// check if our target is still within range
 		double targetRange = (this.aggroCounter > 0 || this.isAggressive) ? aggroRange : stareRange;
 
+		// a player picked up beyond the stare range because it is looking at us would be dropped again this very tick (before the
+		// aggro counter ever started), so keep such a target out to the aggro range
+		if (targetRange < aggroRange && this.targetedEntity instanceof EntityPlayer && this.shouldAttackPlayer((EntityPlayer) this.targetedEntity)) {
+			targetRange = aggroRange;
+		}
+
 		if (this.targetedEntity != null && this.targetedEntity.getDistanceSqToEntity(this) < targetRange * targetRange && this.canSeeEntity(this.targetedEntity)) {
 			// turn towards target
 			this.faceEntity(this.targetedEntity, 10F, this.getVerticalFaceSpeed());
@@ -484,7 +490,22 @@ public class EntityTFTowerGhast extends EntityGhast {
 				// a fireball a player knocked back hits like the vanilla one (a ghast takes 1000 from it); the ghast's own shot
 				// only explodes
 				if (rc.isEntity() && this.shootingEntity instanceof EntityPlayer) {
-					rc.getEntityHit().attackEntityFrom(new Damage(DamageSource.causeFireballDamage(this, this.shootingEntity), 6.0F));
+					Entity hit = rc.getEntityHit();
+					// MITE only lets a bigger hit through during the hurt-resistance window, clear it so the 1000 always lands
+					hit.hurtResistantTime = 0;
+					hit.attackEntityFrom(new Damage(DamageSource.causeFireballDamage(this, this.shootingEntity), 6.0F));
+				}
+				if (this.shootingEntity instanceof EntityPlayer) {
+					// mini ghasts are small and the explosion is not credited to anybody, so a near miss used to leave them
+					// unhurt: every tower ghast (not the Ur-Ghast) the blast touches takes the same player fireball hit
+					AxisAlignedBB blast = this.boundingBox.expand(1.5D, 1.5D, 1.5D);
+					for (Object o : this.worldObj.getEntitiesWithinAABB(EntityTFTowerGhast.class, blast)) {
+						EntityTFTowerGhast ghast = (EntityTFTowerGhast) o;
+						if (!(ghast instanceof twilightforest.entity.boss.EntityTFUrGhast) && !ghast.isDead && (!rc.isEntity() || rc.getEntityHit() != ghast)) {
+							ghast.hurtResistantTime = 0;
+							ghast.attackEntityFrom(new Damage(DamageSource.causeFireballDamage(this, this.shootingEntity), 6.0F));
+						}
+					}
 				}
 				this.worldObj.newExplosion((Entity) null, this.posX, this.posY, this.posZ, twilightforest.TFConfig.explosionBreakBlocks ? 4.0F * this.sizeVsLiving : 0.0F, this.sizeVsLiving, true, false);
 				this.setDead();

@@ -1032,6 +1032,14 @@ implements IMob, IBossDisplayData, IEntityMultiPart {
 		return tag instanceof NBTTagDouble ? ((NBTTagDouble) tag).data : 0.0D;
 	}
 
+	/** Drops of this death, collected so they end up in a chest (TFBossLoot); null outside onDeath. */
+	private java.util.List<net.minecraft.ItemStack> lootChest;
+
+	@Override
+	public net.minecraft.EntityItem dropItemStack(net.minecraft.ItemStack stack, float yOffset) {
+		return twilightforest.TFBossLoot.capture(lootChest, stack) ? null : super.dropItemStack(stack, yOffset);
+	}
+
 	/**
 	 * Progress credit (TFProgress.onBossKilled): every survival player within the credit radius gets the naga flag, the
 	 * hunter achievements and the experience. The result is computed before the drops, which happen in super.onDeath.
@@ -1041,7 +1049,10 @@ implements IMob, IBossDisplayData, IEntityMultiPart {
 		if (!worldObj.isRemote && killResult == null) {
 			killResult = TFProgress.onBossKilled(this, TFProgress.Flag.NAGA, TFAchievementPage.twilightHunter, TFAchievementPage.twilightKillNaga);
 		}
+		lootChest = twilightforest.TFBossLoot.begin(this);
 		super.onDeath(par1DamageSource);
+		twilightforest.TFBossLoot.finish(this, lootChest);
+		lootChest = null;
 
 		if (!worldObj.isRemote && killResult != null) {
 			killResult.awardXp(120);

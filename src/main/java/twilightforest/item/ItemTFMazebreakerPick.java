@@ -6,23 +6,14 @@ import net.minecraft.Material;
 import twilightforest.block.BlockTFMazestone;
 
 /**
- * Mazebreaker pick (iron material, mithril harvest level). MITE_BALANCE: x4 speed and x0.25 wear against mazestone; the
+ * Mazebreaker pick (mithril material: stats, harvest level 4, enchantability). MITE_BALANCE: x4 speed and x0.25 wear against mazestone; the
  * preset enchantments of the 1.7.10 creative stack are removed.
  */
 public class ItemTFMazebreakerPick extends ItemPickaxe {
 
-	/** Material.mithril setMinHarvestLevel(4); the field is protected and vanilla MITE has no getter. */
-	private static final int MITHRIL_HARVEST_LEVEL = 4;
-
 	public ItemTFMazebreakerPick(int id, Material material) {
 		super(id, material);
 		this.setTextureName("twilightforest:mazebreakerPick");
-	}
-
-	/** Mines like a mithril pickaxe (level 4); damage, durability and iron nugget repairs stay those of the iron material. */
-	@Override
-	public int getMaterialHarvestLevel() {
-		return MITHRIL_HARVEST_LEVEL;
 	}
 
 	@Override

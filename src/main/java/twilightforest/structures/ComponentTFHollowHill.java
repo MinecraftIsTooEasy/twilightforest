@@ -95,8 +95,8 @@ public class ComponentTFHollowHill extends StructureTFComponent {
 //		int sn = area / 16; // number of stalactites (there will actually be around twice this number)
 		int[] sna = {0, 128, 256, 512};
 		int sn = sna[hillSize]; // number of stalactites mga = {0, 3, 9, 18}
-		int[] mga = {0, 1, 4, 9};
-		int mg = mga[hillSize]; // number of monster generators mga = {0, 3, 9, 18} (reduced due to "natural" spawning)
+		int[] mga = {0, 4, 9, 18};
+		int mg = mga[hillSize]; // number of monster generators (1.7.10: {0, 3, 9, 18}); lava and glowstone light the hills, so natural spawning there is rare
 		int[] tca = {0, 2, 6, 12};
 		int tc = tca[hillSize];  // number of treasure chests tca = {0, 2, 6, 12};
 

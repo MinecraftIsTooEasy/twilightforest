@@ -1065,7 +1065,7 @@ public class ChunkProviderTwilightForest implements IChunkProvider {
 				List<SpawnListEntry> featureList = nearestFeature.getSpawnableList(creatureType, spawnListIndex);
 				if (creatureType == EnumCreatureType.monster
 						&& (nearestFeature == TFFeature.hill1 || nearestFeature == TFFeature.hill2 || nearestFeature == TFFeature.hill3)) {
-					return TFMiteSpawns.withMiteMonsters(featureList);
+					return TFMiteSpawns.withMiteMonsters(featureList, worldObj);
 				}
 				return featureList;
 			}
@@ -1077,7 +1077,7 @@ public class ChunkProviderTwilightForest implements IChunkProvider {
 			return null;
 		} else if (mapY < TFWorld.SEALEVEL && creatureType == EnumCreatureType.monster && biome instanceof TFBiomeBase) {
 			// cave monsters!
-			return TFMiteSpawns.withMiteMonsters(((TFBiomeBase)biome).getUndergroundSpawnableList());
+			return TFMiteSpawns.withMiteMonsters(((TFBiomeBase)biome).getUndergroundSpawnableList(), worldObj);
 		} else {
 			return biome.getSpawnableList(creatureType);
 		}

@@ -232,4 +232,10 @@ public class EntityTFSwarmSpider extends EntitySpider {
         return 16;
     }
 
+	/** Hollow hill spawners sit among lava and glowstone: MITE's spawner check needs a path weight >= 0, which bright light makes negative. */
+	@Override
+	public float getBlockPathWeight(int x, int y, int z) {
+		float weight = super.getBlockPathWeight(x, y, z);
+		return this.came_from_spawner ? Math.max(0.0F, weight) : weight;
+	}
 }

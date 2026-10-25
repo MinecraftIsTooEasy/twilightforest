@@ -1,6 +1,9 @@
 package twilightforest.item;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import net.minecraft.AxisAlignedBB;
 import net.minecraft.Block;
@@ -51,8 +54,19 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
         World world = player.worldObj;
 
         if (player.onServer()) {
+            // the server decides and applies everything, so the result cannot disagree with the durability cost: the client's
+            // onGround/airJumpUsed view could differ from the server's, which made some uses do nothing visible
             if (!player.onGround) {
-                player.addPotionEffect(new PotionEffect(Potion.jump.id, 45, 0));
+                if (airJumpUsed.put(player, Boolean.TRUE) == null) {
+                    player.addPotionEffect(new PotionEffect(Potion.jump.id, 45, 0));
+                    // the server-side motion of a player is stale, use the movement the client last reported
+                    player.motionX = player.getAsEntityPlayerMP().last_received_motion_x * 3F;
+                    player.motionY = 1.5F;
+                    player.motionZ = player.getAsEntityPlayerMP().last_received_motion_z * 3F;
+                    player.fallDistance = 0.0F;
+                    // sends the velocity to the client, which owns the player's movement
+                    player.velocityChanged = true;
+                }
             } else {
                 int fanned = doFan(world, player);
 
@@ -61,25 +75,15 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
                 }
             }
         } else {
-            // jump if the player is in the air, once per time off the ground. 1.7.10 gated this on the jump boost the server
-            // grants for 45 ticks, which also blocked it while any other jump boost was active or right after an earlier fan jump
-            if (!player.onGround && !airJumpUsed) {
-                airJumpUsed = true;
-                player.motionX *= 3F;
-                player.motionY = 1.5F;
-                player.motionZ *= 3F;
-                player.fallDistance = 0.0F;
-            } else {
-                AxisAlignedBB fanBox = getEffectAABB(world, player);
-                Vec3 lookVec = player.getLookVec();
+            Vec3 lookVec = player.getLookVec();
+            AxisAlignedBB fanBox = getEffectAABB(world, player);
 
-                // particle effect
-                for (int i = 0; i < 30; i++) {
-                    TFParticles.spawn(world, "cloud", fanBox.minX + world.rand.nextFloat() * (fanBox.maxX - fanBox.minX),
-                        fanBox.minY + world.rand.nextFloat() * (fanBox.maxY - fanBox.minY),
-                        fanBox.minZ + world.rand.nextFloat() * (fanBox.maxZ - fanBox.minZ),
-                        lookVec.xCoord, lookVec.yCoord, lookVec.zCoord);
-                }
+            // particle effect
+            for (int i = 0; i < 30; i++) {
+                TFParticles.spawn(world, "cloud", fanBox.minX + world.rand.nextFloat() * (fanBox.maxX - fanBox.minX),
+                    fanBox.minY + world.rand.nextFloat() * (fanBox.maxY - fanBox.minY),
+                    fanBox.minZ + world.rand.nextFloat() * (fanBox.maxZ - fanBox.minZ),
+                    lookVec.xCoord, lookVec.yCoord, lookVec.zCoord);
             }
 
             world.playSound(player.posX + 0.5D, player.posY + 0.5D, player.posZ + 0.5D, "random.breath",
@@ -91,13 +95,13 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
         return true;
     }
 
-    /** Client: the local player has used the air jump since last standing on the ground. */
-    private static boolean airJumpUsed;
+    /** Server: players that used the air jump since last standing on the ground. */
+    private static final Map<Entity, Boolean> airJumpUsed = Collections.synchronizedMap(new WeakHashMap<Entity, Boolean>());
 
     @Override
     public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean isHeld) {
-        if (world.isRemote && entity.onGround) {
-            airJumpUsed = false;
+        if (!world.isRemote && entity.onGround) {
+            airJumpUsed.remove(entity);
         }
     }
 
@@ -153,6 +157,7 @@ public class ItemTFPeacockFan extends ItemTF implements IDamageableItem {
                 entity.motionX = moveVec.xCoord * force;
                 entity.motionY = moveVec.yCoord * force;
                 entity.motionZ = moveVec.zCoord * force;
+                entity.velocityChanged = true;
             }
         }
     }
