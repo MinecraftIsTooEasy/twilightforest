@@ -98,6 +98,7 @@ public class TFBlocks {
 
     /** Called from the ItemRegistryEvent handler (TFRegistryHandler). Blocks first, then their ItemBlocks. */
     public static void registerBlocks(ItemRegistryEvent e) {
+        TFBlockIds.resolve();
         log = new BlockTFLog(TFIds.LOG);
         leaves = new BlockTFLeaves(TFIds.LEAVES);
         firefly = new BlockTFFirefly(TFIds.FIREFLY);

@@ -12,73 +12,99 @@ public final class TFIds {
         return finalId - 256;
     }
 
+    /** Shifts every block id so the range starts at base. Must run before any TF block exists. */
+    public static void relocateBlocks(int base) {
+        int delta = base - blockBase;
+        if (delta == 0) {
+            return;
+        }
+        try {
+            for (java.lang.reflect.Field field : TFIds.class.getDeclaredFields()) {
+                int mods = field.getModifiers();
+                if (field.getType() == int.class && java.lang.reflect.Modifier.isStatic(mods) && !java.lang.reflect.Modifier.isFinal(mods)
+                        && !field.getName().equals("blockBase")) {
+                    int id = field.getInt(null);
+                    if (id >= blockBase && id <= blockBase + (BLOCK_LAST - BLOCK_FIRST)) {
+                        field.setInt(null, id + delta);
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+        blockBase = base;
+    }
+
     public static final int DIMENSION = 7;
 
-    // Blocks: 3652..3779, the ItemBlock shares the id
+    // Blocks: 3652..3779 by default, the ItemBlock shares the id. The block ids below are not final: when another mod already
+    // holds part of that range (FML hands out dynamic block ids downward from 4095), TFBlockIds moves the whole range.
     public static final int BLOCK_FIRST = 3652;
     public static final int BLOCK_LAST = 3779;
-    public static final int LOG = 3652;
-    public static final int LEAVES = 3653;
-    public static final int FIREFLY = 3654;
-    public static final int PORTAL = 3655;
-    public static final int MAZESTONE = 3656;
-    public static final int HEDGE = 3657;
-    public static final int BOSS_SPAWNER = 3658;
-    public static final int FIREFLY_JAR = 3659;
-    public static final int PLANT = 3660;
-    public static final int CICADA = 3661;
-    public static final int ROOT = 3662;
-    public static final int UNCRAFTING_TABLE = 3663;
-    public static final int FIRE_JET = 3664;
-    public static final int NAGASTONE = 3665;
-    public static final int SAPLING = 3666;
-    public static final int MAGIC_LOG = 3667;
-    public static final int MAGIC_LOG_SPECIAL = 3668;
-    public static final int MAGIC_LEAVES = 3669;
-    public static final int MOONWORM = 3670;
-    public static final int TOWER_WOOD = 3671;
-    public static final int TOWER_DEVICE = 3672;
-    public static final int TOWER_TRANSLUCENT = 3673;
-    public static final int TROPHY = 3674;
-    public static final int SHIELD = 3675;
-    public static final int TROPHY_PEDESTAL = 3676;
-    public static final int AURORA_BLOCK = 3677;
-    public static final int UNDER_BRICK = 3678;
-    public static final int THORNS = 3679;
-    public static final int BURNT_THORNS = 3680;
-    public static final int THORN_ROSE = 3681;
-    public static final int LEAVES3 = 3682;
-    public static final int DEADROCK = 3683;
-    public static final int DARKLEAVES = 3684;
-    public static final int AURORA_PILLAR = 3685;
-    public static final int AURORA_SLAB = 3687;
-    public static final int AURORA_DOUBLE_SLAB = 3686;
-    public static final int TROLL_STEINN = 3688;
-    public static final int WISPY_CLOUD = 3689;
-    public static final int FLUFFY_CLOUD = 3690;
-    public static final int GIANT_COBBLE = 3691;
-    public static final int GIANT_LOG = 3692;
-    public static final int GIANT_LEAVES = 3693;
-    public static final int GIANT_OBSIDIAN = 3694;
-    public static final int UBEROUS_SOIL = 3695;
-    public static final int HUGE_STALK = 3696;
-    public static final int HUGE_GLOOM_BLOCK = 3697;
-    public static final int TROLL_VIDR = 3698;
-    public static final int UNRIPE_TROLL_BER = 3699;
-    public static final int TROLL_BER = 3700;
-    public static final int KNIGHTMETAL_STORAGE = 3701;
-    public static final int HUGE_LILY_PAD = 3702;
-    public static final int HUGE_WATER_LILY = 3703;
-    public static final int SLIDER = 3704;
-    public static final int CASTLE_BLOCK = 3705;
-    public static final int CASTLE_MAGIC = 3706;
-    public static final int FORCE_FIELD = 3707;
-    public static final int CINDER_FURNACE = 3708;
-    public static final int CINDER_FURNACE_LIT = 3709;
-    public static final int CINDER_LOG = 3710;
-    public static final int CASTLE_DOOR = 3711;
-    public static final int CASTLE_DOOR_VANISHED = 3712;
-    public static final int CASTLE_UNLOCK = 3713;
+    /** First block id in use; BLOCK_FIRST unless {@link #relocateBlocks(int)} moved the range. */
+    public static int blockBase = BLOCK_FIRST;
+    public static int LOG = 3652;
+    public static int LEAVES = 3653;
+    public static int FIREFLY = 3654;
+    public static int PORTAL = 3655;
+    public static int MAZESTONE = 3656;
+    public static int HEDGE = 3657;
+    public static int BOSS_SPAWNER = 3658;
+    public static int FIREFLY_JAR = 3659;
+    public static int PLANT = 3660;
+    public static int CICADA = 3661;
+    public static int ROOT = 3662;
+    public static int UNCRAFTING_TABLE = 3663;
+    public static int FIRE_JET = 3664;
+    public static int NAGASTONE = 3665;
+    public static int SAPLING = 3666;
+    public static int MAGIC_LOG = 3667;
+    public static int MAGIC_LOG_SPECIAL = 3668;
+    public static int MAGIC_LEAVES = 3669;
+    public static int MOONWORM = 3670;
+    public static int TOWER_WOOD = 3671;
+    public static int TOWER_DEVICE = 3672;
+    public static int TOWER_TRANSLUCENT = 3673;
+    public static int TROPHY = 3674;
+    public static int SHIELD = 3675;
+    public static int TROPHY_PEDESTAL = 3676;
+    public static int AURORA_BLOCK = 3677;
+    public static int UNDER_BRICK = 3678;
+    public static int THORNS = 3679;
+    public static int BURNT_THORNS = 3680;
+    public static int THORN_ROSE = 3681;
+    public static int LEAVES3 = 3682;
+    public static int DEADROCK = 3683;
+    public static int DARKLEAVES = 3684;
+    public static int AURORA_PILLAR = 3685;
+    public static int AURORA_SLAB = 3687;
+    public static int AURORA_DOUBLE_SLAB = 3686;
+    public static int TROLL_STEINN = 3688;
+    public static int WISPY_CLOUD = 3689;
+    public static int FLUFFY_CLOUD = 3690;
+    public static int GIANT_COBBLE = 3691;
+    public static int GIANT_LOG = 3692;
+    public static int GIANT_LEAVES = 3693;
+    public static int GIANT_OBSIDIAN = 3694;
+    public static int UBEROUS_SOIL = 3695;
+    public static int HUGE_STALK = 3696;
+    public static int HUGE_GLOOM_BLOCK = 3697;
+    public static int TROLL_VIDR = 3698;
+    public static int UNRIPE_TROLL_BER = 3699;
+    public static int TROLL_BER = 3700;
+    public static int KNIGHTMETAL_STORAGE = 3701;
+    public static int HUGE_LILY_PAD = 3702;
+    public static int HUGE_WATER_LILY = 3703;
+    public static int SLIDER = 3704;
+    public static int CASTLE_BLOCK = 3705;
+    public static int CASTLE_MAGIC = 3706;
+    public static int FORCE_FIELD = 3707;
+    public static int CINDER_FURNACE = 3708;
+    public static int CINDER_FURNACE_LIT = 3709;
+    public static int CINDER_LOG = 3710;
+    public static int CASTLE_DOOR = 3711;
+    public static int CASTLE_DOOR_VANISHED = 3712;
+    public static int CASTLE_UNLOCK = 3713;
 
     // Items: final item ids; pass item(ID) to Item constructors
     public static final int ITEM_FIRST = 26004;

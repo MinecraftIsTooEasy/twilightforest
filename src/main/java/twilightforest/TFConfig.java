@@ -16,6 +16,8 @@ import java.io.File;
  */
 public final class TFConfig {
     public static final FieldReference<Integer> DIMENSION_ID = new FieldReference<>(TFIds.DIMENSION);
+    /** First block id of the TF range; 0 = automatic (3652, or the first free range when another mod holds part of it). */
+    public static final FieldReference<Integer> BLOCK_ID_BASE = new FieldReference<>(0);
 
     public static final FieldReference<Boolean> SILENT_CICADAS = new FieldReference<>(false);
     public static final FieldReference<String> TWILIGHT_FOREST_SEED = new FieldReference<>("");
@@ -120,6 +122,8 @@ public final class TFConfig {
 
     // clamped balance values, valid once the config has been read
     public static boolean selfCheck = true;
+    /** ids.blockIdBase as read; 0 = automatic. TFBlockIds decides the real range. */
+    public static int blockIdBase = 0;
     public static String portalItems = "auto";
     public static int portalCost = 1;
     public static int portalMinLevel = 10;
@@ -211,12 +215,16 @@ public final class TFConfig {
     public static double mobHpMultConfig = 1.0;
 
     // Bump when the structure changes: an older file is reset to defaults.
-    public static final ConfigRoot ROOT = new Utf8ConfigRoot(3)
+    private static final int CONFIG_VERSION = 3;
+
+    public static final ConfigRoot ROOT = new Utf8ConfigRoot(CONFIG_VERSION)
             .withComment("Twilight Forest")
             .addEntry(ConfigCategory.of("dimension")
                     .withComment("Dimension settings / 维度设置")
                     .addEntry(ConfigEntry.of("dimensionID", DIMENSION_ID).withComment(
-                            "ID of the Twilight Forest dimension, 2 to 127. Must be identical on client and server. / 暮色森林维度的ID,范围2到127。客户端与服务端必须一致。")))
+                            "ID of the Twilight Forest dimension, 2 to 127. Must be identical on client and server. / 暮色森林维度的ID,范围2到127。客户端与服务端必须一致。"))
+                    .addEntry(ConfigEntry.of("blockIdBase", BLOCK_ID_BASE).withComment(
+                            "First of the 128 Twilight Forest block ids. 0 = automatic: 3652, or the first free range from 1024 up when another mod already holds part of 3652-3779; the chosen value is then written here and kept. Changing it in an existing world turns its TF blocks into other blocks. Must be identical on client and server. / 暮色森林128个方块ID的起点。0为自动:默认3652,若3652-3779已被其他模组占用,则从1024起寻找第一段空闲范围,选定的值会写回此处并固定下来。在已有存档中修改会使其中的暮色方块变成别的方块。客户端与服务端必须一致。")))
             .addEntry(ConfigCategory.of("general")
                     .withComment("General options / 常规选项")
                     .addEntry(ConfigEntry.of("SilentCicadas", SILENT_CICADAS).withComment(
@@ -383,6 +391,18 @@ public final class TFConfig {
 
     private TFConfig() {}
 
+    /** Writes the current values of every entry back to config/twilightforest.json (used to keep an automatic block id base). */
+    public static void save() {
+        File file = new File(net.xiaoyu233.fml.FishModLoader.CONFIG_DIR, "twilightforest.json");
+        try (java.io.Writer out = java.nio.file.Files.newBufferedWriter(file.toPath(), java.nio.charset.StandardCharsets.UTF_8)) {
+            com.google.gson.JsonObject json = ROOT.write().getAsJsonObject();
+            json.addProperty("config_version", CONFIG_VERSION);
+            Config.GSON.toJson(json, out);
+        } catch (Throwable t) {
+            TwilightForestMod.LOGGER.error("Twilight Forest config {} could not be written", file, t);
+        }
+    }
+
     private static int clamp(int v, int lo, int hi) {
         return Math.max(lo, Math.min(hi, v));
     }
@@ -414,6 +434,7 @@ public final class TFConfig {
         TwilightForestMod.dimensionID = dim;
         twilightforest.dimension.TFDimension.setId(dim);
 
+        blockIdBase = BLOCK_ID_BASE.get() == null ? 0 : BLOCK_ID_BASE.get();
         selfCheck = SELF_CHECK.get();
         portalItems = PORTAL_ITEMS.get() == null ? "auto" : PORTAL_ITEMS.get().trim();
         if (portalItems.replace(" ", "").equalsIgnoreCase("emerald,diamond")) {
