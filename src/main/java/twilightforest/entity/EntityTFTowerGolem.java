@@ -180,13 +180,18 @@ public class EntityTFTowerGolem extends EntityMob {
 	 */
 	@Override
 	protected void dropFewItems(boolean recently_hit_by_player, DamageSource damage_source) {
-		int var4 = this.rand.nextInt(3);
+		// iron: half the time 3-8 nuggets, otherwise one ingot
+		if (this.rand.nextBoolean()) {
+			int nuggets = 3 + this.rand.nextInt(6);
 
-		for (int i = 0; i < var4; ++i) {
-			this.dropItem(Item.ironNugget.itemID, 1);
+			for (int i = 0; i < nuggets; ++i) {
+				this.dropItem(Item.ironNugget.itemID, 1);
+			}
+		} else {
+			this.dropItem(Item.ingotIron.itemID, 1);
 		}
 
-		var4 = this.rand.nextInt(3);
+		int var4 = this.rand.nextInt(3);
 
 		for (int i = 0; i < var4; ++i) {
 			this.dropItem(TFBlocks.towerWood.blockID, 1);
