@@ -186,6 +186,10 @@ public class ComponentTFHollowHill extends StructureTFComponent {
         	if (oreStalactitesPlaced >= totalCap) {
         		return;
         	}
+        	// a level 3 hill spans ~50 chunks; thin the attempts so the caps are not used up by the chunks generated first
+        	if (hillSize >= 3 && stalRNG.nextFloat() >= Math.min(1.0F, totalCap * 2.0F / 512)) {
+        		return;
+        	}
         	TFGenCaveStalactite stalag = null;
         	for (int attempt = 0; attempt < 6; attempt++) {
         		TFGenCaveStalactite candidate = TFGenCaveStalactite.makeRandomOreStalactite(stalRNG, hillSize);
@@ -219,7 +223,7 @@ public class ComponentTFHollowHill extends StructureTFComponent {
 		int[][] caps = {
 			/* hill1 */ {10, 8, 6, 4, 2, 0, 0, 0, 0},
 			/* hill2 */ {8, 8, 0, 4, 8, 4, 2, 1, 0},
-			/* hill3 */ {8, 8, 0, 6, 12, 6, 4, 3, 1}
+			/* hill3 */ {16, 16, 4, 10, 20, 12, 8, 5, 2}
 		};
 		int[] row = caps[Math.max(1, Math.min(3, hillSize)) - 1];
 		if (kind == TFGenCaveStalactite.coal) return row[0];

@@ -63,7 +63,7 @@ public final class TFConfig {
     public static final FieldReference<Double> ORE_HEIGHT_SCALE = new FieldReference<>(0.6);
     public static final FieldReference<Integer> HILL_ORE_CAP_HILL1 = new FieldReference<>(24);
     public static final FieldReference<Integer> HILL_ORE_CAP_HILL2 = new FieldReference<>(40);
-    public static final FieldReference<Integer> HILL_ORE_CAP_HILL3 = new FieldReference<>(64);
+    public static final FieldReference<Integer> HILL_ORE_CAP_HILL3 = new FieldReference<>(96);
     public static final FieldReference<String> PROGRESS_MODE = new FieldReference<>("enforced");
     public static final FieldReference<Boolean> PROGRESS_BY_KILL = new FieldReference<>(true);
     public static final FieldReference<Integer> PROGRESS_CREDIT_RADIUS = new FieldReference<>(48);
@@ -153,7 +153,7 @@ public final class TFConfig {
     public static double oreHeightScale = 0.6;
     public static int hillOreCapHill1 = 24;
     public static int hillOreCapHill2 = 40;
-    public static int hillOreCapHill3 = 64;
+    public static int hillOreCapHill3 = 96;
     public static String progressMode = "enforced";
     public static boolean progressByKill = true;
     public static int progressCreditRadius = 48;
