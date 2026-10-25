@@ -19,7 +19,7 @@ import net.minecraft.WorldGenerator;
 import twilightforest.TFAchievementPage;
 import twilightforest.TFFeature;
 import twilightforest.block.BlockTFPlant;
-import twilightforest.block.TFBlocks;
+import twilightforest.TFIds;
 import twilightforest.compat.TFDamage;
 import twilightforest.entity.EntityTFTroll;
 import twilightforest.world.TFGenTrollRoots;
@@ -97,7 +97,7 @@ public class TFBiomeHighlands extends TFBiomeBase {
 	private static final WorldGenHugeTrees megaPineGen2 = new WorldGenHugeTrees(false, 13, 1, 1);
 	private static final WorldGenBlockBlob genBoulder = new WorldGenBlockBlob(Block.cobblestoneMossy.blockID, 0);
 	private static final TFGenTrollRoots genTrollRoots = new TFGenTrollRoots();
-	private static final WorldGenTallGrass worldGenMushgloom = new WorldGenTallGrass(TFBlocks.plant.blockID, BlockTFPlant.META_MUSHGLOOM);
+	private static final WorldGenTallGrass worldGenMushgloom = new WorldGenTallGrass(TFIds.PLANT, BlockTFPlant.META_MUSHGLOOM);
 
 
 	@SuppressWarnings("unchecked")
