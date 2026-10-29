@@ -51,6 +51,13 @@ public class TFWeatherRenderer extends TFRenderHandler {
 	
 	
 	private StructureBoundingBox protectedBox;
+
+	/** Last result of isNearLockedBiome, valid for one world tick at one block column. */
+	private World lockedScanWorld;
+	private int lockedScanX;
+	private int lockedScanZ;
+	private long lockedScanTime = Long.MIN_VALUE;
+	private boolean lockedScanResult;
 	
 	
 	public TFWeatherRenderer() {
@@ -641,9 +648,22 @@ public class TFWeatherRenderer extends TFRenderHandler {
 
 
 	private boolean isNearLockedBiome(World world, EntityLivingBase viewEntity) {
-        int range = 15;
         int px = MathHelper.floor_double(viewEntity.posX);
         int pz = MathHelper.floor_double(viewEntity.posZ);
+        // the 31x31 biome scan ran every frame; its answer only changes when the viewer changes block column
+        if (world == this.lockedScanWorld && px == this.lockedScanX && pz == this.lockedScanZ && world.getTotalWorldTime() == this.lockedScanTime) {
+            return this.lockedScanResult;
+        }
+        this.lockedScanWorld = world;
+        this.lockedScanX = px;
+        this.lockedScanZ = pz;
+        this.lockedScanTime = world.getTotalWorldTime();
+        this.lockedScanResult = scanLockedBiome(world, viewEntity, px, pz);
+        return this.lockedScanResult;
+	}
+
+	private boolean scanLockedBiome(World world, EntityLivingBase viewEntity, int px, int pz) {
+        int range = 15;
         
 		for (int z = pz - range ; z <= pz + range; ++z) {
             for (int x = px - range; x <= px + range; ++x) {
