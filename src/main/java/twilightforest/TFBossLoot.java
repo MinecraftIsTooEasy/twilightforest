@@ -115,12 +115,17 @@ public final class TFBossLoot {
 		return out;
 	}
 
-	/** Nearest column around the boss with a dry replaceable block on a solid floor and room to open the lid. */
+	/**
+	 * Nearest column around the boss with a dry replaceable block on a solid floor and room to open the lid. The search starts just
+	 * outside the boss's body: during the death animation the Alpha Yeti and the Hydra still clear every block inside their bounding
+	 * box, which destroyed a chest placed under them (and dropped its loot on the floor).
+	 */
 	private static int[] findSpot(World world, Entity boss, boolean needPair) {
 		int bx = (int) Math.floor(boss.posX);
 		int by = (int) Math.floor(boss.posY);
 		int bz = (int) Math.floor(boss.posZ);
-		for (int r = 0; r <= SEARCH_RADIUS; r++) {
+		int body = (int) Math.ceil(boss.width / 2.0F);
+		for (int r = body; r <= body + SEARCH_RADIUS; r++) {
 			for (int dx = -r; dx <= r; dx++) {
 				for (int dz = -r; dz <= r; dz++) {
 					if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
@@ -132,7 +137,7 @@ public final class TFBossLoot {
 						if (y < 2 || y >= world.getHeight() - 2) {
 							continue;
 						}
-						if (isSpot(world, x, y, z) && (!needPair || isSpot(world, x + 1, y, z))) {
+						if (isSpot(world, x, y, z) && !insideBoss(boss, x, y, z) && (!needPair || (isSpot(world, x + 1, y, z) && !insideBoss(boss, x + 1, y, z)))) {
 							return new int[] { x, y, z };
 						}
 					}
@@ -140,6 +145,23 @@ public final class TFBossLoot {
 			}
 		}
 		return null;
+	}
+
+	/** True when the chest block at x,y,z would sit inside the boss or one of its parts (they keep clearing blocks while dying). */
+	private static boolean insideBoss(Entity boss, int x, int y, int z) {
+		net.minecraft.AxisAlignedBB cell = net.minecraft.AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 2, z + 1);
+		if (boss.boundingBox != null && boss.boundingBox.intersectsWith(cell)) {
+			return true;
+		}
+		Entity[] parts = boss.getParts();
+		if (parts != null) {
+			for (Entity part : parts) {
+				if (part != null && part.boundingBox != null && part.boundingBox.expand(1.0D, 1.0D, 1.0D).intersectsWith(cell)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private static boolean isSpot(World world, int x, int y, int z) {

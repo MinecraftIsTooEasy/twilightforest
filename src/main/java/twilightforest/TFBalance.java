@@ -70,6 +70,15 @@ public final class TFBalance {
                 || entity instanceof twilightforest.entity.boss.EntityTFYetiAlpha || entity instanceof twilightforest.entity.boss.EntityTFSnowQueen;
     }
 
+    /**
+     * The bosses boss.hpMult and boss.damageMult apply to: every boss but the Naga, the entry boss that is meant to be beaten with
+     * early gear. The Hydra's damage is dealt by its heads and the Ur-Ghast's by its fireballs, so the responsible entity of the
+     * damage source (the boss itself) is what this is called with.
+     */
+    public static boolean isBuffedBoss(Entity entity) {
+        return isBoss(entity) && !(entity instanceof twilightforest.entity.boss.EntityTFNaga);
+    }
+
     /** Bosses and their summoned minions ignore the mirrored blood moon frenzy unless mirrorBloodMoonBosses is on (E11, H7). */
     public static boolean frenzyExempt(Entity entity) {
         if (TFConfig.mirrorBloodMoonBosses) {
@@ -87,7 +96,7 @@ public final class TFBalance {
 
     /**
      * Global stat tuning without touching entity attributes: damage dealt by TF mobs is multiplied by mob.damageMult (and the
-     * day scale for common mobs), damage taken by a TF mob is divided by mob.hpMult / boss.hpMult (and the day scale), and a
+     * day scale for common mobs, boss.damageMult for the bosses), damage taken by a TF mob is divided by mob.hpMult / boss.hpMult (and the day scale), and a
      * single hit on a boss is capped at max(boss.singleHitCapPct of its max health, 40). Called with the final damage.
      */
     public static float tuneDamage(EntityLivingBase target, Entity attacker, float amount) {
@@ -97,13 +106,17 @@ public final class TFBalance {
         double scaled = amount;
         if (isTFEntity(attacker)) {
             scaled *= TFConfig.mobDamageMult;
-            if (!isBoss(attacker) && attacker instanceof EntityLivingBase && TFDimension.is(attacker.worldObj)) {
+            if (isBuffedBoss(attacker)) {
+                scaled *= TFConfig.bossDamageMult;
+            } else if (!isBoss(attacker) && attacker instanceof EntityLivingBase && TFDimension.is(attacker.worldObj)) {
                 scaled *= dayScale();
             }
         }
         if (isTFEntity(target)) {
             if (isBoss(target)) {
-                scaled /= TFConfig.bossHpMult;
+                if (isBuffedBoss(target)) {
+                    scaled /= TFConfig.bossHpMult;
+                }
                 if (TFConfig.bossSingleHitCapPct > 0.0D) {
                     scaled = Math.min(scaled, Math.max(target.getMaxHealth() * TFConfig.bossSingleHitCapPct / 100.0D, 40.0D));
                 }

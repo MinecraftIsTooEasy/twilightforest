@@ -31,6 +31,12 @@ public class ComponentTFMazeRoomVault extends ComponentTFMazeRoom {
 
 		// 4x4 room in the middle
 		fillWithAir(world, sbb, 6, 2, 6, 9, 3, 9);
+
+		// MITE spawns mobs in the dark vault; one stepping on the plates blew up the chests before the player got in. Lit, nothing spawns.
+		this.placeBlockAtCurrentPosition(world, Block.glowStone, 0, 6, 4, 6, sbb);
+		this.placeBlockAtCurrentPosition(world, Block.glowStone, 0, 9, 4, 6, sbb);
+		this.placeBlockAtCurrentPosition(world, Block.glowStone, 0, 6, 4, 9, sbb);
+		this.placeBlockAtCurrentPosition(world, Block.glowStone, 0, 9, 4, 9, sbb);
 		
 		// pressure plates, sand & tnt
 		fillWithMetadataBlocks(world, sbb, 6, 2, 5, 9, 2, 5, Block.pressurePlatePlanks, 0, null, 0, false);

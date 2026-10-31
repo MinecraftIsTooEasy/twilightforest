@@ -73,7 +73,8 @@ public final class TFConfig {
     public static final FieldReference<Boolean> PENALTIES_LETHAL = new FieldReference<>(false);
     public static final FieldReference<Boolean> BOSS_MIN_LEVEL_GATE = new FieldReference<>(true);
     public static final FieldReference<Integer> BOSS_MIN_LEVEL_OFFSET = new FieldReference<>(0);
-    public static final FieldReference<Double> BOSS_HP_MULT = new FieldReference<>(1.0);
+    public static final FieldReference<Double> BOSS_HP_MULT = new FieldReference<>(1.5);
+    public static final FieldReference<Double> BOSS_DAMAGE_MULT = new FieldReference<>(1.5);
     public static final FieldReference<Double> MOB_HP_MULT = new FieldReference<>(1.0);
     public static final FieldReference<Double> MOB_DAMAGE_MULT = new FieldReference<>(1.0);
     public static final FieldReference<Double> MOB_XP_MULT = new FieldReference<>(1.0);
@@ -165,7 +166,8 @@ public final class TFConfig {
     public static boolean penaltiesLethal = false;
     public static boolean bossMinLevelGate = true;
     public static int bossMinLevelOffset = 0;
-    public static double bossHpMult = 1.0;
+    public static double bossHpMult = 1.5;
+    public static double bossDamageMult = 1.5;
     public static double mobHpMult = 1.0;
     public static double mobDamageMult = 1.0;
     public static double mobXpMult = 1.0;
@@ -285,7 +287,8 @@ public final class TFConfig {
                     .addEntry(ConfigEntry.of("penalties.lethal", PENALTIES_LETHAL).withComment("Allow biome penalties to kill. / 允许群系惩罚致死。"))
                     .addEntry(ConfigEntry.of("boss.minLevelGate", BOSS_MIN_LEVEL_GATE).withComment("Boss spawners need a nearby player of a minimum level. / 首领刷怪笼要求附近有达到最低等级的玩家。"))
                     .addEntry(ConfigEntry.of("boss.minLevelOffset", BOSS_MIN_LEVEL_OFFSET).withComment("Added to every boss level gate. / 叠加到每个首领等级门槛上的数值。"))
-                    .addEntry(ConfigEntry.of("boss.hpMult", BOSS_HP_MULT).withComment("Boss health multiplier. / 首领生命值倍率。"))
+                    .addEntry(ConfigEntry.of("boss.hpMult", BOSS_HP_MULT).withComment("Boss health multiplier (the Naga, the first boss, is not affected). / 首领生命值倍率(第一个首领娜迦不受影响)。"))
+                    .addEntry(ConfigEntry.of("boss.damageMult", BOSS_DAMAGE_MULT).withComment("Damage multiplier of the bosses and their attacks, on top of mob.damageMult (the Naga is not affected). / 首领及其攻击的伤害倍率,叠加在 mob.damageMult 之上(娜迦不受影响)。"))
                     .addEntry(ConfigEntry.of("mob.hpMult", MOB_HP_MULT).withComment("Mob health multiplier. / 怪物生命值倍率。"))
                     .addEntry(ConfigEntry.of("mob.damageMult", MOB_DAMAGE_MULT).withComment("Mob damage multiplier. / 怪物伤害倍率。"))
                     .addEntry(ConfigEntry.of("mob.xpMult", MOB_XP_MULT).withComment("Mob XP multiplier. / 怪物经验倍率。"))
@@ -485,6 +488,7 @@ public final class TFConfig {
         twilightforest.compat.TFModCompat.Profile profile = twilightforest.compat.TFModCompat.profile();
         mobHpMultConfig = clamp(MOB_HP_MULT.get(), 0.1, 10.0);
         bossHpMult = clamp(BOSS_HP_MULT.get() * profile.bossHpMult, 0.1, 10.0);
+        bossDamageMult = clamp(BOSS_DAMAGE_MULT.get(), 0.1, 10.0);
         mobHpMult = clamp(mobHpMultConfig * profile.mobHpMult, 0.1, 10.0);
         mobDamageMult = clamp(MOB_DAMAGE_MULT.get() * profile.mobDamageMult, 0.1, 10.0);
         mobXpMult = clamp(MOB_XP_MULT.get(), 0.0, 10.0);

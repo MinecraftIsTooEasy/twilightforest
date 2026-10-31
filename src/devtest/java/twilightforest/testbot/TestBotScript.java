@@ -169,6 +169,7 @@ final class TestBotScript {
         step("acq_smelt", "07b Acquisition: smelting (real furnace tile entity)", acq::stepSmelt);
         step("acq_harvest", "07c Acquisition: block harvest in survival with MITE tools", acq::stepHarvest);
         step("acq_mobs", "07d Acquisition: mob and boss drops (first kill vs repeat kill)", acq::stepMobs);
+        step("acq_bossfire", "07d2 Boss killed by fire alone: reward chest", acq::stepBossFireDeath);
         step("acq_loot", "07e Acquisition: structure chest loot (every TFTreasure table)", acq::stepLoot);
         step("acq_special", "07f Acquisition: special interactions (powder, trees, ram, beans, queen, uncrafting)", acq::stepSpecial);
         step("acq_matrix", "07g Acquisition matrix and red list", acq::stepMatrix);

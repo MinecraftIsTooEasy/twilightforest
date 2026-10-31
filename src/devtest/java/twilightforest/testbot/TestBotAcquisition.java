@@ -812,6 +812,85 @@ final class TestBotAcquisition {
         }
     }
 
+    /**
+     * User report: a boss burnt to death leaves no reward chest. Each boss stands on a stone floor 40 blocks east of the player and is
+     * killed by fire damage only (no player hit, recentlyHit 0), like burning in lava or fire. Reports the chests and the dropped items
+     * found around it a few seconds later.
+     */
+    void stepBossFireDeath(Report.Section s) throws Exception {
+        for (int i = 0; i < BOSS_ORDER.length; i++) {
+            final String simple = BOSS_ORDER[i];
+            Class<?> cls = null;
+            for (Map.Entry<Class<?>, String> e : TFCreatures.registeredNames().entrySet()) {
+                if (e.getKey().getSimpleName().equals(simple)) {
+                    cls = e.getKey();
+                }
+            }
+            if (cls == null) {
+                s.warn("boss " + simple, "not registered");
+                continue;
+            }
+            final Class<?> c = cls;
+            final String name = TFCreatures.registeredNames().get(cls);
+            final int bx = 40, by = FEET + 10, bz = 0;
+            String setup = bot.server(() -> {
+                WorldServer w = t.swOf(t.sp());
+                killNonPlayerEntities(w);
+                clearBox(w, bx - 12, by - 2, bz - 12, bx + 12, by + 14, bz + 12);
+                for (int x = bx - 12; x <= bx + 12; x++) {
+                    for (int z = bz - 12; z <= bz + 12; z++) {
+                        w.setBlock(x, by - 1, z, Block.stone.blockID, 0, 2);
+                    }
+                }
+                Entity e = t.construct(w, c, name, false, null);
+                if (!(e instanceof EntityLivingBase l)) {
+                    return "cannot construct " + name;
+                }
+                e.setLocationAndAngles(bx + 0.5D, by, bz + 0.5D, 0.0F, 0.0F);
+                w.spawnEntityInWorld(e);
+                // fire only: the burning entity dies from DamageSource.onFire, nobody hit it
+                for (int k = 0; k < 400 && !l.isDead && l.getHealth() > 0.0F; k++) {
+                    l.setFire(10);
+                    l.attackEntityFrom(new Damage(DamageSource.onFire, 50.0F));
+                }
+                return "dead=" + l.isDead + " health=" + l.getHealth() + " burning=" + l.isBurning();
+            });
+            s.info("boss " + simple + " burnt", setup);
+            bot.serverTicks(260);
+            String found = bot.server(() -> {
+                WorldServer w = t.swOf(t.sp());
+                int chests = 0;
+                int stacks = 0;
+                StringBuilder where = new StringBuilder();
+                for (int x = bx - 12; x <= bx + 12; x++) {
+                    for (int y = by - 30; y <= by + 14; y++) {
+                        for (int z = bz - 12; z <= bz + 12; z++) {
+                            if (w.getBlockTileEntity(x, y, z) instanceof TileEntityChest chest) {
+                                chests++;
+                                for (int slot = 0; slot < chest.getSizeInventory(); slot++) {
+                                    if (chest.getStackInSlot(slot) != null) {
+                                        stacks++;
+                                    }
+                                }
+                                where.append(x).append(',').append(y).append(',').append(z).append(' ');
+                            }
+                        }
+                    }
+                }
+                int items = w.getEntitiesWithinAABB(EntityItem.class, net.minecraft.AxisAlignedBB.getBoundingBox(bx - 16, by - 32, bz - 16, bx + 16, by + 20, bz + 16)).size();
+                return chests + "|" + stacks + "|" + items + "|" + where;
+            });
+            String[] f = found.split("\\|", -1);
+            s.info("boss " + simple + " after death", "chests " + f[0] + " (" + f[1] + " stacks) at " + f[3] + ", item entities on the ground " + f[2]);
+            s.check(Integer.parseInt(f[0]) > 0, "boss " + simple + ": reward chest after a fire death",
+                "boss " + simple + ": no reward chest after a fire death (" + f[2] + " item entities on the ground)");
+            bot.server(() -> {
+                killNonPlayerEntities(t.swOf(t.sp()));
+                return null;
+            });
+        }
+    }
+
     private String killMany(Class<?> cls, String name, int kills, TFProgress.Flag flag, List<String> dropsOut) throws Exception {
         return killMany(cls, name, kills, flag, dropsOut, false);
     }

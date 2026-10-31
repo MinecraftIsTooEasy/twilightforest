@@ -152,8 +152,8 @@ public class TFBiomeDecorator extends BiomeDecorator {
     protected void decorate()
     {
         
-    	// random features!
-        if(randomGenerator.nextInt(6) == 0)
+    	// random features! (none on the final plateau: wells, stumps and ruins do not belong next to the final castle)
+        if(this.biome != TFBiomeBase.highlandsCenter && randomGenerator.nextInt(6) == 0)
         {
             int rx = chunk_X + randomGenerator.nextInt(16) + 8;
             int rz = chunk_Z + randomGenerator.nextInt(16) + 8;
